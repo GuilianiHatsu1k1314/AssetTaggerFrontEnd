@@ -1,3 +1,4 @@
+import eslintReact from "@eslint-react/eslint-plugin";
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -14,11 +15,13 @@ export default defineConfig([
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
       tseslint.configs.stylisticTypeChecked,
+      eslintReact.configs["strict-type-checked"],
       eslintConfigPrettier,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
     languageOptions: {
+      parser: tseslint.parser,
       parserOptions: {
         project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
