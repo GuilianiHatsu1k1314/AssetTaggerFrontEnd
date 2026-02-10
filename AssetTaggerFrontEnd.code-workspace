@@ -5,6 +5,10 @@
 		}
 	],
 	"settings": {
+		"[css]": {
+			"editor.defaultFormatter": "vscode.css-language-features",
+			"editor.formatOnSave": true
+		},
 		"[javascript][typescript][typescriptreact]": {
 			"editor.codeActionsOnSave": {
 				"source.addMissingImports.ts": "explicit",
