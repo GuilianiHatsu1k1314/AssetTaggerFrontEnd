@@ -7,6 +7,7 @@
 	"settings": {
 		"[javascript][typescript][typescriptreact]": {
 			"editor.codeActionsOnSave": {
+				"source.addMissingImports.ts": "explicit",
 				"source.organizeImports": "explicit"
 			},
 			"editor.defaultFormatter": "esbenp.prettier-vscode",
