@@ -9,6 +9,11 @@
 			"editor.defaultFormatter": "vscode.css-language-features",
 			"editor.formatOnSave": true
 		},
+		"[typescriptreact]": {
+			"editor.quickSuggestions": {
+				"strings": "on"
+			}
+		},
 		"[javascript][typescript][typescriptreact]": {
 			"editor.codeActionsOnSave": {
 				"source.addMissingImports.ts": "explicit",
@@ -16,6 +21,9 @@
 			},
 			"editor.defaultFormatter": "esbenp.prettier-vscode",
 			"editor.formatOnSave": true
+		},
+		"files.associations": {
+			"*.css": "tailwindcss"
 		}
 	},
 	"extensions": {
