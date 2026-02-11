@@ -21,6 +21,10 @@
 				"strings": "on"
 			}
 		},
+		"[xml]": {
+			"editor.defaultFormatter": "esbenp.prettier-vscode",
+			"editor.formatOnSave": true
+		},
 		"[typescript][typescriptreact]": {
 			"editor.codeActionsOnSave": {
 				"source.addMissingImports.ts": "explicit",
