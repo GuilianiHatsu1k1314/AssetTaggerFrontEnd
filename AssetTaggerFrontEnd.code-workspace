@@ -30,6 +30,7 @@
     },
     "files.readonlyInclude": {
       "**/routeTree.gen.ts": true,
+      "**/package-lock.json": true,
     },
     "files.watcherExclude": {
       "**/routeTree.gen.ts": true,
