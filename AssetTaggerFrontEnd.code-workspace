@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"[tailwindcss]": {
-			"editor.defaultFormatter": "vscode.css-language-features",
+			"editor.defaultFormatter": "esbenp.prettier-vscode",
 			"editor.formatOnSave": true
 		},
 		"[javascript]": {
