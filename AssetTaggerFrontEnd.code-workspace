@@ -5,7 +5,7 @@
 		}
 	],
 	"settings": {
-		"[css]": {
+		"[tailwindcss]": {
 			"editor.defaultFormatter": "vscode.css-language-features",
 			"editor.formatOnSave": true
 		},
