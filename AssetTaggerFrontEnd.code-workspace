@@ -5,7 +5,7 @@
 		}
 	],
 	"settings": {
-		"[tailwindcss]": {
+		"[javascript][tailwindcss][typescript][typescriptreact][xml]": {
 			"editor.defaultFormatter": "esbenp.prettier-vscode",
 			"editor.formatOnSave": true
 		},
@@ -13,25 +13,17 @@
 			"editor.codeActionsOnSave": {
 				"source.sortImports": "explicit"
 			},
-			"editor.defaultFormatter": "esbenp.prettier-vscode",
-			"editor.formatOnSave": true
 		},
 		"[typescriptreact]": {
 			"editor.quickSuggestions": {
 				"strings": "on"
 			}
 		},
-		"[xml]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode",
-			"editor.formatOnSave": true
-		},
 		"[typescript][typescriptreact]": {
 			"editor.codeActionsOnSave": {
 				"source.addMissingImports.ts": "explicit",
 				"source.fixAll.eslint": "explicit"
 			},
-			"editor.defaultFormatter": "esbenp.prettier-vscode",
-			"editor.formatOnSave": true
 		},
 		"files.associations": {
 			"*.css": "tailwindcss"
