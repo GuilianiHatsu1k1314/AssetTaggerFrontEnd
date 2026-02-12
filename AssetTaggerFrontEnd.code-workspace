@@ -5,7 +5,7 @@
 		}
 	],
 	"settings": {
-		"[javascript][tailwindcss][typescript][typescriptreact][xml]": {
+		"[javascript][json][jsonc][tailwindcss][typescript][typescriptreact][xml]": {
 			"editor.defaultFormatter": "esbenp.prettier-vscode",
 			"editor.formatOnSave": true
 		},
