@@ -1,0 +1,49 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "[javascript][json][jsonc][tailwindcss][typescript][typescriptreact][xml]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+    },
+    "[javascript]": {
+      "editor.codeActionsOnSave": {
+        "source.sortImports": "explicit",
+      },
+    },
+    "[typescriptreact]": {
+      "editor.quickSuggestions": {
+        "strings": "on",
+      },
+    },
+    "[typescript][typescriptreact]": {
+      "editor.codeActionsOnSave": {
+        "source.addMissingImports.ts": "explicit",
+        "source.fixAll.eslint": "explicit",
+      },
+    },
+    "files.associations": {
+      "*.css": "tailwindcss",
+    },
+    "files.readonlyInclude": {
+      "**/routeTree.gen.ts": true,
+      "**/package-lock.json": true,
+    },
+    "files.watcherExclude": {
+      "**/routeTree.gen.ts": true,
+    },
+    "search.exclude": {
+      "**/routeTree.gen.ts": true,
+    },
+  },
+  "extensions": {
+    "recommendations": [
+      "bradlc.vscode-tailwindcss",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+    ],
+  },
+}
