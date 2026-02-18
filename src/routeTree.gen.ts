@@ -10,11 +10,36 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as TableSelectionRouteImport } from './routes/TableSelection'
+import { Route as TableDisplayRouteImport } from './routes/TableDisplay'
+import { Route as LandingPageRouteImport } from './routes/LandingPage'
+import { Route as TableRouteRouteImport } from './routes/table/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TableIndexRouteImport } from './routes/table/index'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TableSelectionRoute = TableSelectionRouteImport.update({
+  id: '/TableSelection',
+  path: '/TableSelection',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TableDisplayRoute = TableDisplayRouteImport.update({
+  id: '/TableDisplay',
+  path: '/TableDisplay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingPageRoute = LandingPageRouteImport.update({
+  id: '/LandingPage',
+  path: '/LandingPage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TableRouteRoute = TableRouteRouteImport.update({
+  id: '/table',
+  path: '/table',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +47,74 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TableIndexRoute = TableIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TableRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/table': typeof TableRouteRouteWithChildren
+  '/LandingPage': typeof LandingPageRoute
+  '/TableDisplay': typeof TableDisplayRoute
+  '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table/': typeof TableIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/LandingPage': typeof LandingPageRoute
+  '/TableDisplay': typeof TableDisplayRoute
+  '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table': typeof TableIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/table': typeof TableRouteRouteWithChildren
+  '/LandingPage': typeof LandingPageRoute
+  '/TableDisplay': typeof TableDisplayRoute
+  '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table/': typeof TableIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/table'
+    | '/LandingPage'
+    | '/TableDisplay'
+    | '/TableSelection'
+    | '/about'
+    | '/table/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | '/'
+    | '/LandingPage'
+    | '/TableDisplay'
+    | '/TableSelection'
+    | '/about'
+    | '/table'
+  id:
+    | '__root__'
+    | '/'
+    | '/table'
+    | '/LandingPage'
+    | '/TableDisplay'
+    | '/TableSelection'
+    | '/about'
+    | '/table/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TableRouteRoute: typeof TableRouteRouteWithChildren
+  LandingPageRoute: typeof LandingPageRoute
+  TableDisplayRoute: typeof TableDisplayRoute
+  TableSelectionRoute: typeof TableSelectionRoute
   AboutRoute: typeof AboutRoute
 }
 
@@ -58,6 +127,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/TableSelection': {
+      id: '/TableSelection'
+      path: '/TableSelection'
+      fullPath: '/TableSelection'
+      preLoaderRoute: typeof TableSelectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/TableDisplay': {
+      id: '/TableDisplay'
+      path: '/TableDisplay'
+      fullPath: '/TableDisplay'
+      preLoaderRoute: typeof TableDisplayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/LandingPage': {
+      id: '/LandingPage'
+      path: '/LandingPage'
+      fullPath: '/LandingPage'
+      preLoaderRoute: typeof LandingPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/table': {
+      id: '/table'
+      path: '/table'
+      fullPath: '/table'
+      preLoaderRoute: typeof TableRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +162,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/table/': {
+      id: '/table/'
+      path: '/'
+      fullPath: '/table/'
+      preLoaderRoute: typeof TableIndexRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
   }
 }
 
+interface TableRouteRouteChildren {
+  TableIndexRoute: typeof TableIndexRoute
+}
+
+const TableRouteRouteChildren: TableRouteRouteChildren = {
+  TableIndexRoute: TableIndexRoute,
+}
+
+const TableRouteRouteWithChildren = TableRouteRoute._addFileChildren(
+  TableRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TableRouteRoute: TableRouteRouteWithChildren,
+  LandingPageRoute: LandingPageRoute,
+  TableDisplayRoute: TableDisplayRoute,
+  TableSelectionRoute: TableSelectionRoute,
   AboutRoute: AboutRoute,
 }
 export const routeTree = rootRouteImport
