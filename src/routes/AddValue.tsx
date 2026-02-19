@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Sidebar } from "./components/-SideBar";
+import { Sidebar } from "./components/-SideBar"; // Adjusted to match standard path
 
 export const Route = createFileRoute("/AddValue")({
   component: AddAssetPage,
@@ -36,12 +36,14 @@ function AddAssetPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-white">
+    // CHANGED: flex-col on mobile, flex-row on desktop for proper Sidebar handling
+    <div className="flex h-screen w-full flex-col bg-white md:flex-row">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-8">
+      {/* CHANGED: p-4 and pb-28 on mobile to clear bottom nav, p-8 on desktop */}
+      <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
         {/* Breadcrumbs */}
         <div className="mb-8 text-lg font-medium text-black">
           <Link to="/TableSelection" className="hover:underline">
@@ -61,77 +63,84 @@ function AddAssetPage() {
           <h2 className="text-xl font-semibold text-black">Asset</h2>
         </div>
 
-        {/* Dynamic Input Table */}
-        <div className="w-full max-w-5xl overflow-hidden rounded-lg shadow-sm">
-          {/* Header Row (Light Blue) */}
-          <div className="grid grid-cols-4 gap-4 bg-[#567bfb] px-4 py-6">
-            <div className="text-center text-xl font-bold text-black">
-              AssetID
-            </div>
-            <div className="text-center text-xl font-bold text-black">
-              AssetTag
-              <br />
-              Date
-            </div>
-            <div className="text-center text-xl font-bold text-black">
-              AssetPurchase
-              <br />
-              Date
-            </div>
-            <div className="text-center text-xl font-bold text-black">
-              AssetPurchase
-              <br />
-              Price
-            </div>
-          </div>
-
-          {/* Rows Container (Dark Blue Background) */}
-          <div className="space-y-4 bg-[#1e3a8a] px-4 py-4">
-            {rows.map((row, index) => (
-              <div key={index} className="grid grid-cols-4 items-center gap-4">
-                {/* AssetID (Placeholder) */}
-                <div className="text-center text-sm text-white/50"></div>
-
-                {/* Tag Date Input */}
-                <div className="flex justify-center">
-                  <input
-                    type="text"
-                    value={row.tagDate}
-                    onChange={(e) =>
-                      handleChange(index, "tagDate", e.target.value)
-                    }
-                    placeholder="--Enter--"
-                    className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-
-                {/* Purchase Date Input */}
-                <div className="flex justify-center">
-                  <input
-                    type="text"
-                    value={row.purchaseDate}
-                    onChange={(e) =>
-                      handleChange(index, "purchaseDate", e.target.value)
-                    }
-                    placeholder="--Enter--"
-                    className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
-
-                {/* Purchase Price Input */}
-                <div className="flex justify-center">
-                  <input
-                    type="text"
-                    value={row.purchasePrice}
-                    onChange={(e) =>
-                      handleChange(index, "purchasePrice", e.target.value)
-                    }
-                    placeholder="--Enter--"
-                    className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-                </div>
+        {/* Dynamic Input Table Wrapper */}
+        {/* CHANGED: overflow-x-auto for horizontal scrolling */}
+        <div className="w-full max-w-5xl overflow-x-auto rounded-lg shadow-sm">
+          {/* CHANGED: min-w-[800px] forces the table to stay wide and scroll instead of squishing */}
+          <div className="min-w-[800px]">
+            {/* Header Row (Light Blue) */}
+            <div className="grid grid-cols-4 gap-4 bg-[#567bfb] px-4 py-6">
+              <div className="text-center text-xl font-bold text-black">
+                AssetID
               </div>
-            ))}
+              <div className="text-center text-xl font-bold text-black">
+                AssetTag
+                <br />
+                Date
+              </div>
+              <div className="text-center text-xl font-bold text-black">
+                AssetPurchase
+                <br />
+                Date
+              </div>
+              <div className="text-center text-xl font-bold text-black">
+                AssetPurchase
+                <br />
+                Price
+              </div>
+            </div>
+
+            {/* Rows Container (Dark Blue Background) */}
+            <div className="space-y-4 bg-[#1e3a8a] px-4 py-4">
+              {rows.map((row, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-4 items-center gap-4"
+                >
+                  {/* AssetID (Placeholder) */}
+                  <div className="text-center text-sm text-white/50"></div>
+
+                  {/* Tag Date Input */}
+                  <div className="flex justify-center">
+                    <input
+                      type="text"
+                      value={row.tagDate}
+                      onChange={(e) =>
+                        handleChange(index, "tagDate", e.target.value)
+                      }
+                      placeholder="--Enter--"
+                      className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Purchase Date Input */}
+                  <div className="flex justify-center">
+                    <input
+                      type="text"
+                      value={row.purchaseDate}
+                      onChange={(e) =>
+                        handleChange(index, "purchaseDate", e.target.value)
+                      }
+                      placeholder="--Enter--"
+                      className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Purchase Price Input */}
+                  <div className="flex justify-center">
+                    <input
+                      type="text"
+                      value={row.purchasePrice}
+                      onChange={(e) =>
+                        handleChange(index, "purchasePrice", e.target.value)
+                      }
+                      placeholder="--Enter--"
+                      className="w-32 rounded-sm bg-[#dcdcdc] px-2 py-1 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -146,7 +155,7 @@ function AddAssetPage() {
             Create a new row
           </button>
 
-          {/* Add Value Button (Moved Here) */}
+          {/* Add Value Button */}
           <button
             onClick={handleSubmit}
             className="rounded-full bg-blue-600 px-8 py-2 font-bold text-white shadow-md transition-all hover:bg-blue-700"

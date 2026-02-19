@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Sidebar } from "../components/-SideBar";
+import { Sidebar } from "../components/-SideBar"; // Adjusted path to match standard
 
 export const Route = createFileRoute("/table/Asset")({
   component: AssetPage,
@@ -67,7 +67,6 @@ const columnHelper = createColumnHelper<Asset>();
 const columns = [
   columnHelper.accessor("assetId", {
     header: "AssetID",
-    // Link to QR view remains
     cell: (info) => (
       <Link
         to="/table/QRPage"
@@ -78,15 +77,15 @@ const columns = [
       </Link>
     ),
   }),
-  columnHelper.accessor("assetTagDate", { header: "AssetTag Date" }),
-  columnHelper.accessor("purchaseDate", { header: "AssetPurchase Date" }),
-  columnHelper.accessor("purchasePrice", { header: "AssetPurchase Price" }),
-  columnHelper.accessor("serialNumber", { header: "AssetSerial Number" }),
+  columnHelper.accessor("assetTagDate", { header: "AssetTagDate" }),
+  columnHelper.accessor("purchaseDate", { header: "AssetPurchaseDate" }),
+  columnHelper.accessor("purchasePrice", { header: "AssetPurchasePrice" }),
+  columnHelper.accessor("serialNumber", { header: "AssetSerialNumber" }),
   columnHelper.accessor("warrantyUnit", {
-    header: "AssetWarrantyUnit OfMeasure",
+    header: "AssetWarrantyUnitOfMeasure",
   }),
   columnHelper.accessor("warrantyDuration", {
-    header: "AssetWarranty Duration",
+    header: "AssetWarrantyDuration",
   }),
 ];
 
@@ -100,22 +99,22 @@ function AssetPage() {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // Handle Row Click
   const handleRowClick = (assetId: string) => {
     if (isEditMode) {
-      // Navigate to the edit page with the selected ID
       navigate({ to: "/EditValue", search: { assetId } });
-      setIsEditMode(false); // Turn off edit mode after selection
+      setIsEditMode(false);
     }
   };
 
   return (
-    <div className="flex h-screen w-full bg-gray-50">
+    // Flex-col on mobile to let Sidebar/Bottom Nav stack correctly, Flex-row on desktop
+    <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto p-8">
+      {/* CHANGED: Adjusted padding for mobile (p-4 pb-28) and desktop (md:p-8) */}
+      <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
         {/* Breadcrumb */}
-        <div className="mb-6 text-xl font-medium text-black">
+        <div className="mb-6 text-lg font-medium text-black md:text-xl">
           <Link className="hover:underline" to="/TableSelection">
             Table Selection
           </Link>
@@ -127,8 +126,7 @@ function AssetPage() {
         <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <h1 className="text-2xl font-bold text-black">Asset</h1>
 
-          <div className="relative w-full max-w-md">
-            {/* Search Input (Visual Only) */}
+          <div className="relative w-full md:max-w-md">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
                 className="h-5 w-5 text-gray-500"
@@ -151,7 +149,7 @@ function AssetPage() {
             />
           </div>
 
-          <div className="flex items-center gap-4 text-black">
+          <div className="flex flex-wrap items-center gap-4 text-black">
             <Link
               to="/AddValue"
               className="flex items-center gap-1 font-medium hover:text-blue-600"
@@ -159,7 +157,6 @@ function AssetPage() {
               <span className="text-2xl leading-none font-light">+</span> Add
             </Link>
 
-            {/* EDIT BUTTON: Toggles "Selection Mode" */}
             <button
               onClick={() => setIsEditMode(!isEditMode)}
               className={`flex items-center gap-1 rounded px-2 py-1 font-medium transition-colors ${
@@ -205,16 +202,23 @@ function AssetPage() {
           </div>
         </div>
 
-        {/* Table UI */}
+        {/* Table UI Wrapper */}
+        {/* CHANGED: overflow-x-auto enables horizontal swiping on mobile */}
         <div
-          className={`overflow-hidden rounded-lg shadow-lg transition-all ${isEditMode ? "ring-4 ring-yellow-400" : ""}`}
+          className={`w-full overflow-x-auto rounded-lg shadow-lg transition-all ${
+            isEditMode ? "ring-4 ring-yellow-400" : ""
+          }`}
         >
-          <table className="w-full min-w-full table-auto text-left text-sm">
+          {/* CHANGED: min-w-[800px] ensures columns don't squish together */}
+          <table className="w-full min-w-200 table-auto text-left text-sm md:min-w-full">
             <thead className="h-16 bg-[#567bfb] text-base font-bold text-black">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <th className="px-6 py-4 align-middle" key={header.id}>
+                    <th
+                      className="px-6 py-4 align-middle whitespace-nowrap"
+                      key={header.id}
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
@@ -229,7 +233,6 @@ function AssetPage() {
                 <tr
                   key={row.id}
                   onClick={() => handleRowClick(row.original.assetId)}
-                  // If Edit Mode is ON, change cursor to pointer and add hover effect
                   className={`${
                     index % 2 === 0 ? "bg-[#1e3a8a]" : "bg-[#567bfb]"
                   } border-b border-blue-400/20 ${
@@ -239,7 +242,10 @@ function AssetPage() {
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td className="px-6 py-6 align-middle" key={cell.id}>
+                    <td
+                      className="px-6 py-6 align-middle whitespace-nowrap"
+                      key={cell.id}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
