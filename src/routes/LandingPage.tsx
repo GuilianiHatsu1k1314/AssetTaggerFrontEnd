@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Sidebar } from "./components/SideBar"; // Ensure this path matches your project structure
+import { Sidebar } from "./components/-SideBar"; // Ensure this path matches your project structure
 
 // 1. Single Route Definition
 export const Route = createFileRoute("/LandingPage")({

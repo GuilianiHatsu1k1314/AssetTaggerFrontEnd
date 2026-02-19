@@ -27,7 +27,7 @@ export function Sidebar() {
         </Link>
         <Link
           className="text-xl font-medium transition-colors hover:text-blue-200"
-          to="/scan-qr"
+          to="/ScanQR"
         >
           Scan QR
         </Link>
@@ -35,7 +35,8 @@ export function Sidebar() {
 
       {/* Logout Icon (Bottom) */}
       <div className="mt-auto">
-        <button
+        <Link
+          to="/"
           className="group flex items-center text-black transition-colors hover:text-white"
           title="Logout"
         >
@@ -53,7 +54,7 @@ export function Sidebar() {
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" x2="9" y1="12" y2="12" />
           </svg>
-        </button>
+        </Link>
       </div>
     </div>
   );

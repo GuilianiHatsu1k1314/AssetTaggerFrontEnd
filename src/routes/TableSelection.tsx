@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { Sidebar } from "./components/SideBar"; // Ensure this path matches your project structure
+import { Sidebar } from "./components/-SideBar"; // Ensure this path matches your project structure
 
 // 1. Single Route Definition
 export const Route = createFileRoute("/TableSelection")({
@@ -45,7 +45,7 @@ function Dropdown() {
     // 3. Add the navigation logic here
     // This will take the user to "/Asset", "/AssetFix", etc.
     // If you want them to go to "/tables/Asset", change it to: to: `/tables/${option}`
-    navigate({ to: `/${option}` });
+    navigate({ to: `/table/${option}` });
   };
 
   return (

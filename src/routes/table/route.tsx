@@ -7,7 +7,6 @@ export const Route = createFileRoute("/table")({
 function AppLayoutComponent() {
   return (
     <div>
-      <h1>App Layout</h1>
       <Outlet />
     </div>
   );

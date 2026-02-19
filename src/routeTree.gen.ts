@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as TableSelectionRouteImport } from './routes/TableSelection'
-import { Route as TableDisplayRouteImport } from './routes/TableDisplay'
+import { Route as ScanQRRouteImport } from './routes/ScanQR'
 import { Route as LandingPageRouteImport } from './routes/LandingPage'
+import { Route as EditValueRouteImport } from './routes/EditValue'
+import { Route as AddValueRouteImport } from './routes/AddValue'
 import { Route as TableRouteRouteImport } from './routes/table/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TableIndexRouteImport } from './routes/table/index'
+import { Route as TableQRPageRouteImport } from './routes/table/QRPage'
+import { Route as TableAssetRouteImport } from './routes/table/Asset'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -27,14 +31,24 @@ const TableSelectionRoute = TableSelectionRouteImport.update({
   path: '/TableSelection',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TableDisplayRoute = TableDisplayRouteImport.update({
-  id: '/TableDisplay',
-  path: '/TableDisplay',
+const ScanQRRoute = ScanQRRouteImport.update({
+  id: '/ScanQR',
+  path: '/ScanQR',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LandingPageRoute = LandingPageRouteImport.update({
   id: '/LandingPage',
   path: '/LandingPage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditValueRoute = EditValueRouteImport.update({
+  id: '/EditValue',
+  path: '/EditValue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddValueRoute = AddValueRouteImport.update({
+  id: '/AddValue',
+  path: '/AddValue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TableRouteRoute = TableRouteRouteImport.update({
@@ -52,32 +66,54 @@ const TableIndexRoute = TableIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TableRouteRoute,
 } as any)
+const TableQRPageRoute = TableQRPageRouteImport.update({
+  id: '/QRPage',
+  path: '/QRPage',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableAssetRoute = TableAssetRouteImport.update({
+  id: '/Asset',
+  path: '/Asset',
+  getParentRoute: () => TableRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/table': typeof TableRouteRouteWithChildren
+  '/AddValue': typeof AddValueRoute
+  '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
-  '/TableDisplay': typeof TableDisplayRoute
+  '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table/Asset': typeof TableAssetRoute
+  '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/AddValue': typeof AddValueRoute
+  '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
-  '/TableDisplay': typeof TableDisplayRoute
+  '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table/Asset': typeof TableAssetRoute
+  '/table/QRPage': typeof TableQRPageRoute
   '/table': typeof TableIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/table': typeof TableRouteRouteWithChildren
+  '/AddValue': typeof AddValueRoute
+  '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
-  '/TableDisplay': typeof TableDisplayRoute
+  '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/table/Asset': typeof TableAssetRoute
+  '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
 }
 export interface FileRouteTypes {
@@ -85,35 +121,49 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/table'
+    | '/AddValue'
+    | '/EditValue'
     | '/LandingPage'
-    | '/TableDisplay'
+    | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/table/Asset'
+    | '/table/QRPage'
     | '/table/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/AddValue'
+    | '/EditValue'
     | '/LandingPage'
-    | '/TableDisplay'
+    | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/table/Asset'
+    | '/table/QRPage'
     | '/table'
   id:
     | '__root__'
     | '/'
     | '/table'
+    | '/AddValue'
+    | '/EditValue'
     | '/LandingPage'
-    | '/TableDisplay'
+    | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/table/Asset'
+    | '/table/QRPage'
     | '/table/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TableRouteRoute: typeof TableRouteRouteWithChildren
+  AddValueRoute: typeof AddValueRoute
+  EditValueRoute: typeof EditValueRoute
   LandingPageRoute: typeof LandingPageRoute
-  TableDisplayRoute: typeof TableDisplayRoute
+  ScanQRRoute: typeof ScanQRRoute
   TableSelectionRoute: typeof TableSelectionRoute
   AboutRoute: typeof AboutRoute
 }
@@ -134,11 +184,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableSelectionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/TableDisplay': {
-      id: '/TableDisplay'
-      path: '/TableDisplay'
-      fullPath: '/TableDisplay'
-      preLoaderRoute: typeof TableDisplayRouteImport
+    '/ScanQR': {
+      id: '/ScanQR'
+      path: '/ScanQR'
+      fullPath: '/ScanQR'
+      preLoaderRoute: typeof ScanQRRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/LandingPage': {
@@ -146,6 +196,20 @@ declare module '@tanstack/react-router' {
       path: '/LandingPage'
       fullPath: '/LandingPage'
       preLoaderRoute: typeof LandingPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/EditValue': {
+      id: '/EditValue'
+      path: '/EditValue'
+      fullPath: '/EditValue'
+      preLoaderRoute: typeof EditValueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/AddValue': {
+      id: '/AddValue'
+      path: '/AddValue'
+      fullPath: '/AddValue'
+      preLoaderRoute: typeof AddValueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/table': {
@@ -169,14 +233,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableIndexRouteImport
       parentRoute: typeof TableRouteRoute
     }
+    '/table/QRPage': {
+      id: '/table/QRPage'
+      path: '/QRPage'
+      fullPath: '/table/QRPage'
+      preLoaderRoute: typeof TableQRPageRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Asset': {
+      id: '/table/Asset'
+      path: '/Asset'
+      fullPath: '/table/Asset'
+      preLoaderRoute: typeof TableAssetRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
   }
 }
 
 interface TableRouteRouteChildren {
+  TableAssetRoute: typeof TableAssetRoute
+  TableQRPageRoute: typeof TableQRPageRoute
   TableIndexRoute: typeof TableIndexRoute
 }
 
 const TableRouteRouteChildren: TableRouteRouteChildren = {
+  TableAssetRoute: TableAssetRoute,
+  TableQRPageRoute: TableQRPageRoute,
   TableIndexRoute: TableIndexRoute,
 }
 
@@ -187,8 +269,10 @@ const TableRouteRouteWithChildren = TableRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TableRouteRoute: TableRouteRouteWithChildren,
+  AddValueRoute: AddValueRoute,
+  EditValueRoute: EditValueRoute,
   LandingPageRoute: LandingPageRoute,
-  TableDisplayRoute: TableDisplayRoute,
+  ScanQRRoute: ScanQRRoute,
   TableSelectionRoute: TableSelectionRoute,
   AboutRoute: AboutRoute,
 }
