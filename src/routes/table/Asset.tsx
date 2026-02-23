@@ -3,17 +3,21 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel, // <-- Imported sorting model
+  SortingState, // <-- Imported sorting state type
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { Sidebar } from "../components/-SideBar"; // Adjusted path to match standard
+
+import { Sidebar } from "../components/-SideBar";
+import { useAssetContext } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Asset")({
   component: AssetPage,
 });
 
 // Data Types
-type Asset = {
+interface Asset {
   assetId: string;
   assetTagDate: string;
   purchaseDate: string;
@@ -21,65 +25,44 @@ type Asset = {
   serialNumber: string;
   warrantyDuration: number;
   warrantyUnit: string;
-};
-
-const defaultData: Asset[] = [
-  {
-    assetId: "0001",
-    assetTagDate: "1/29/2026",
-    purchaseDate: "1/20/2026",
-    purchasePrice: "₱20000",
-    serialNumber: "SN-9F3K",
-    warrantyDuration: 10,
-    warrantyUnit: "mm",
-  },
-  {
-    assetId: "0002",
-    assetTagDate: "1/22/2026",
-    purchaseDate: "1/20/2026",
-    purchasePrice: "₱70000",
-    serialNumber: "AS-4Q7M",
-    warrantyDuration: 5,
-    warrantyUnit: "yy",
-  },
-  {
-    assetId: "0004",
-    assetTagDate: "10/17/2025",
-    purchaseDate: "10/16/2025",
-    purchasePrice: "₱3000",
-    serialNumber: "A-2049",
-    warrantyDuration: 9,
-    warrantyUnit: "mm",
-  },
-  {
-    assetId: "0005",
-    assetTagDate: "1/9/2026",
-    purchaseDate: "1/7/2026",
-    purchasePrice: "₱1000",
-    serialNumber: "AT-6X2P",
-    warrantyDuration: 7,
-    warrantyUnit: "dd",
-  },
-];
+}
 
 const columnHelper = createColumnHelper<Asset>();
 
 const columns = [
   columnHelper.accessor("assetId", {
-    header: "AssetID",
     cell: (info) => (
       <Link
-        to="/table/QRPage"
         className="font-bold underline hover:text-blue-300"
         title="View QR Code"
+        to="/table/QRPage"
       >
         {info.getValue()}
       </Link>
     ),
+    header: "AssetID",
   }),
-  columnHelper.accessor("assetTagDate", { header: "AssetTagDate" }),
-  columnHelper.accessor("purchaseDate", { header: "AssetPurchaseDate" }),
-  columnHelper.accessor("purchasePrice", { header: "AssetPurchasePrice" }),
+  columnHelper.accessor("assetTagDate", {
+    header: "AssetTagDate",
+    sortingFn: "datetime", // Tells the table this is a date string
+  }),
+  columnHelper.accessor("purchaseDate", {
+    header: "AssetPurchaseDate",
+    sortingFn: "datetime",
+  }),
+  columnHelper.accessor("purchasePrice", {
+    header: "AssetPurchasePrice",
+    // Custom sorter: Removes the '₱' symbol and sorts it as an actual number
+    sortingFn: (rowA, rowB, columnId) => {
+      const a = Number(
+        rowA.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
+      );
+      const b = Number(
+        rowB.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
+      );
+      return a < b ? -1 : a > b ? 1 : 0;
+    },
+  }),
   columnHelper.accessor("serialNumber", { header: "AssetSerialNumber" }),
   columnHelper.accessor("warrantyUnit", {
     header: "AssetWarrantyUnitOfMeasure",
@@ -90,28 +73,35 @@ const columns = [
 ];
 
 function AssetPage() {
+  const { assets } = useAssetContext();
   const navigate = useNavigate();
+
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false); // Dropdown toggle state
+  const [sorting, setSorting] = useState<SortingState>([]); // Stores active sorting rules
 
   const table = useReactTable({
     columns,
-    data: defaultData,
+    data: assets,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(), // Enables sorting logic
+    onSortingChange: setSorting, // Updates state when sorted
+    state: {
+      sorting, // Hook up sorting state
+    },
   });
 
   const handleRowClick = (assetId: string) => {
     if (isEditMode) {
-      navigate({ to: "/EditValue", search: { assetId } });
+      navigate({ search: { assetId }, to: "/EditValue" });
       setIsEditMode(false);
     }
   };
 
   return (
-    // Flex-col on mobile to let Sidebar/Bottom Nav stack correctly, Flex-row on desktop
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
 
-      {/* CHANGED: Adjusted padding for mobile (p-4 pb-28) and desktop (md:p-8) */}
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
         {/* Breadcrumb */}
         <div className="mb-6 text-lg font-medium text-black md:text-xl">
@@ -131,14 +121,14 @@ function AssetPage() {
               <svg
                 className="h-5 w-5 text-gray-500"
                 fill="none"
-                viewBox="0 0 24 24"
                 stroke="currentColor"
+                viewBox="0 0 24 24"
               >
                 <path
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
             </div>
@@ -151,19 +141,21 @@ function AssetPage() {
 
           <div className="flex flex-wrap items-center gap-4 text-black">
             <Link
-              to="/AddValue"
               className="flex items-center gap-1 font-medium hover:text-blue-600"
+              to="/AddValue"
             >
               <span className="text-2xl leading-none font-light">+</span> Add
             </Link>
 
             <button
-              onClick={() => setIsEditMode(!isEditMode)}
               className={`flex items-center gap-1 rounded px-2 py-1 font-medium transition-colors ${
                 isEditMode
                   ? "bg-yellow-400 text-black shadow-md"
                   : "hover:text-blue-600"
               }`}
+              onClick={() => {
+                setIsEditMode(!isEditMode);
+              }}
             >
               <svg
                 fill="none"
@@ -182,34 +174,69 @@ function AssetPage() {
               {isEditMode ? "Select Row to Edit" : "Edit"}
             </button>
 
-            <button className="flex items-center gap-1 font-medium hover:text-blue-600">
-              <svg
-                fill="none"
-                height="20"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                width="20"
+            {/* FILTER DROPDOWN CONTAINER */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-1 font-medium hover:text-blue-600 focus:outline-none"
+                onClick={() => {
+                  setIsFilterOpen(!isFilterOpen);
+                }}
               >
-                <path
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
-              Filter
-            </button>
+                <svg
+                  fill="none"
+                  height="20"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  width="20"
+                >
+                  <path
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+                Filter
+              </button>
+
+              {/* DROPDOWN MENU */}
+              {isFilterOpen && (
+                <div className="ring-opacity-5 absolute top-full right-0 z-50 mt-2 w-56 rounded-md bg-white py-2 shadow-xl ring-1 ring-black">
+                  <div className="px-4 py-2 text-xs font-bold tracking-wider text-gray-500 uppercase">
+                    Sort By
+                  </div>
+
+                  {/* Reusable Sort Option Buttons */}
+                  <SortMenuItem
+                    columnId="assetTagDate"
+                    label="Tag Date"
+                    table={table}
+                  />
+                  <SortMenuItem
+                    columnId="purchaseDate"
+                    label="Purchase Date"
+                    table={table}
+                  />
+                  <SortMenuItem
+                    columnId="purchasePrice"
+                    label="Purchase Price"
+                    table={table}
+                  />
+                  <SortMenuItem
+                    columnId="warrantyDuration"
+                    label="Warranty Duration"
+                    table={table}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Table UI Wrapper */}
-        {/* CHANGED: overflow-x-auto enables horizontal swiping on mobile */}
         <div
-          className={`w-full overflow-x-auto rounded-lg shadow-lg transition-all ${
-            isEditMode ? "ring-4 ring-yellow-400" : ""
-          }`}
+          className={`w-full overflow-x-auto rounded-lg shadow-lg transition-all ${isEditMode ? "ring-4 ring-yellow-400" : ""}`}
         >
-          {/* CHANGED: min-w-[800px] ensures columns don't squish together */}
           <table className="w-full min-w-200 table-auto text-left text-sm md:min-w-full">
             <thead className="h-16 bg-[#567bfb] text-base font-bold text-black">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -231,15 +258,15 @@ function AssetPage() {
             <tbody className="text-base text-white">
               {table.getRowModel().rows.map((row, index) => (
                 <tr
-                  key={row.id}
-                  onClick={() => handleRowClick(row.original.assetId)}
-                  className={`${
-                    index % 2 === 0 ? "bg-[#1e3a8a]" : "bg-[#567bfb]"
-                  } border-b border-blue-400/20 ${
+                  className={`${index % 2 === 0 ? "bg-[#1e3a8a]" : "bg-[#567bfb]"} border-b border-blue-400/20 ${
                     isEditMode
                       ? "cursor-pointer transition-colors hover:bg-yellow-500 hover:text-black"
                       : ""
                   }`}
+                  key={row.id}
+                  onClick={() => {
+                    handleRowClick(row.original.assetId);
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
@@ -259,5 +286,35 @@ function AssetPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Helper Component: Sort Menu Button
+// ---------------------------------------------------------
+function SortMenuItem({
+  columnId,
+  label,
+  table,
+}: {
+  columnId: string;
+  label: string;
+  table: any;
+}) {
+  const column = table.getColumn(columnId);
+  const isSorted = column?.getIsSorted(); // Returns false | 'asc' | 'desc'
+
+  return (
+    <button
+      className="flex w-full items-center justify-between px-4 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50"
+      onClick={() => column?.toggleSorting()}
+    >
+      <span>{label}</span>
+
+      {/* Show arrows based on active sort state */}
+      <span className="w-4 text-center font-bold text-blue-600">
+        {isSorted === "asc" ? "↑" : isSorted === "desc" ? "↓" : ""}
+      </span>
+    </button>
   );
 }

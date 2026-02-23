@@ -1,22 +1,34 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+
 import { Sidebar } from "../components/-SideBar"; // 1. Import Sidebar
 
 export const Route = createFileRoute("/table/QRPage")({
   component: QRViewPage,
 });
 
+// Helper Component for alignment
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[160px_20px_1fr]">
+      <span className="whitespace-nowrap">{label}</span>
+      <span className="text-center">:</span>
+      <span className="truncate">{value}</span>
+    </div>
+  );
+}
+
 function QRViewPage() {
   const navigate = useNavigate();
 
   // Dummy Data (Based on your table's first row)
   const assetData = {
-    productName: "Laptop",
-    modelNumber: "XPS 15",
-    serialNumber: "SN-9F3K",
-    issuedTo: "John Doe",
-    department: "IT Dept",
-    location: "Head Office",
     dateTagged: "1/29/2026",
+    department: "IT Dept",
+    issuedTo: "John Doe",
+    location: "Head Office",
+    modelNumber: "XPS 15",
+    productName: "Laptop",
+    serialNumber: "SN-9F3K",
   };
 
   return (
@@ -29,21 +41,24 @@ function QRViewPage() {
         {/* Header: Back Button & Title */}
         <div className="mb-8 flex items-center gap-4">
           <button
-            onClick={() => window.history.back()}
             className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200"
+            onClick={() => {
+              window.history.back();
+            }}
+            type="button"
           >
             {/* Back Arrow Icon */}
             <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
               fill="none"
+              height="32"
               stroke="black"
-              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+              width="32"
             >
-              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <line x1="19" x2="5" y1="12" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </button>
@@ -53,7 +68,7 @@ function QRViewPage() {
         </div>
 
         {/* Main Blue Card */}
-        <div className="relative mx-auto max-w-5xl rounded-sm bg-[#567bfb] p-12 shadow-lg md:p-16">
+        <div className="relative mx-auto max-w-5xl rounded-sm border-8 border-black p-12 shadow-lg md:p-16">
           {/* Card Header Text (Centered) */}
           <div className="mb-16 space-y-1 text-center">
             <h2 className="text-xl font-bold tracking-wide text-black">
@@ -93,34 +108,23 @@ function QRViewPage() {
         <div className="mx-auto mt-4 flex max-w-5xl justify-end">
           <button className="flex items-center gap-2 text-lg font-bold text-black transition-colors hover:text-blue-700">
             <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
               fill="none"
+              height="24"
               stroke="currentColor"
-              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="24"
             >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
+              <line x1="12" x2="12" y1="15" y2="3"></line>
             </svg>
             Download
           </button>
         </div>
       </main>
-    </div>
-  );
-}
-
-// Helper Component for alignment
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid grid-cols-[160px_20px_1fr]">
-      <span className="whitespace-nowrap">{label}</span>
-      <span className="text-center">:</span>
-      <span className="truncate">{value}</span>
     </div>
   );
 }

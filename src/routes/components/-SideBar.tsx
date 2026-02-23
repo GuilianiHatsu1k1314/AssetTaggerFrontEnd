@@ -34,25 +34,27 @@ export function Sidebar() {
         </nav>
 
         <div className="mt-auto">
-          <button
-            className="group flex items-center text-black transition-colors hover:text-white"
-            title="Logout"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <Link to="/">
+            <button
+              className="group flex items-center text-black transition-colors hover:text-white"
+              title="Logout"
             >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -136,20 +138,22 @@ export function Sidebar() {
           <span className="text-[10px] font-medium">Tables</span>
         </Link>
 
-        <button className="flex flex-col items-center gap-1 text-black hover:text-blue-600">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <span className="text-[10px] font-medium">Profile</span>
-        </button>
+        <Link to="/">
+          <button className="flex flex-col items-center gap-1 text-black hover:text-blue-600">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span className="text-[10px] font-medium">Profile</span>
+          </button>
+        </Link>
       </div>
     </>
   );
