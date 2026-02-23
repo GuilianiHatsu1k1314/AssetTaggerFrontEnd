@@ -1,4 +1,10 @@
-import React, { createContext, type ReactNode, use, useState } from "react";
+import React, {
+  createContext,
+  type ReactNode,
+  use,
+  useEffect,
+  useState,
+} from "react";
 
 // 1. Define your Asset type
 export interface Asset {
@@ -44,7 +50,19 @@ const AssetContext = createContext<AssetContextType | undefined>(undefined);
 
 // 4. Create the Provider Component
 export function AssetProvider({ children }: { children: ReactNode }) {
-  const [assets, setAssets] = useState<Asset[]>(defaultData);
+  // INITIALIZE STATE FROM LOCAL STORAGE
+  const [assets, setAssets] = useState<Asset[]>(() => {
+    const savedAssets = localStorage.getItem("assetData");
+    if (savedAssets) {
+      return JSON.parse(savedAssets); // Use saved data if it exists
+    }
+    return defaultData; // Otherwise use default data
+  });
+
+  // SAVE TO LOCAL STORAGE WHENEVER ASSETS CHANGE
+  useEffect(() => {
+    localStorage.setItem("assetData", JSON.stringify(assets));
+  }, [assets]);
 
   const updateAsset = (id: string, updatedData: Partial<Asset>) => {
     setAssets((prev) =>
