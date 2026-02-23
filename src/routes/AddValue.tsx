@@ -19,6 +19,7 @@ const tableColumns = [
   { key: "warrantyUnit", label: "Asset Warranty Unit Of Measure" },
   { key: "warrantyDuration", label: "Asset Warranty Duration" },
 ];
+
 function AddAssetPage() {
   const navigate = useNavigate();
   const { addAsset } = useAssetContext(); // Pull from global context to save data
@@ -49,6 +50,36 @@ function AddAssetPage() {
 
   // Submit Logic
   const handleSubmit = () => {
+    // --- NEW VALIDATION LOGIC ---
+    let isValid = true;
+
+    // Loop through every row the user has created
+    for (const row of rows) {
+      // Loop through every required column
+      for (const col of tableColumns) {
+        if (!col.isReadOnly) {
+          // If the field is completely empty or just spaces, it's invalid
+          const value = row[col.key];
+          if (
+            value === undefined ||
+            value === null ||
+            String(value).trim() === ""
+          ) {
+            isValid = false;
+            break; // Stop checking this row, we already found an error
+          }
+        }
+      }
+      if (!isValid) break; // Stop checking other rows if we already found an error
+    }
+
+    // If validation failed, alert the user and abort saving
+    if (!isValid) {
+      alert("Please fill out all fields in all rows before saving.");
+      return;
+    }
+    // ----------------------------
+
     rows.forEach((row) => {
       // Mock ID generation since we don't have a backend yet
       const newAsset = {
@@ -109,46 +140,48 @@ function AddAssetPage() {
                 </div>
               ))}
             </div>
+
             {/* 4. DYNAMIC INPUT ROWS */}
             <div className="space-y-4 bg-[#1e3a8a] px-2 py-4">
               {rows.map((row, index) => (
-                <div
-                  className="grid items-center gap-2"
-                  key={index}
-                  style={{
-                    gridTemplateColumns: `repeat(${tableColumns.length}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {tableColumns.map((col) => {
-                    // If it's the primary key / read-only column, render a placeholder
-                    if (col.isReadOnly) {
+                <div className="grid items-center gap-2" key={index}>
+                  <div
+                    className="grid items-center gap-2"
+                    style={{
+                      gridTemplateColumns: `repeat(${tableColumns.length}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {tableColumns.map((col) => {
+                      // If it's the primary key / read-only column, render a placeholder
+                      if (col.isReadOnly) {
+                        return (
+                          <div
+                            className="text-center text-sm font-medium text-white/50"
+                            key={col.key}
+                          >
+                            (Auto)
+                          </div>
+                        );
+                      }
+
+                      // Render input fields for all other columns
                       return (
-                        <div
-                          className="text-center text-sm font-medium text-white/50"
-                          key={col.key}
-                        >
-                          (Auto)
+                        <div className="flex justify-center" key={col.key}>
+                          <input
+                            className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] px-2 py-2 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                            onChange={(e) => {
+                              handleChange(index, col.key, e.target.value);
+                            }}
+                            placeholder="--Enter--"
+                            type={
+                              col.key === "warrantyDuration" ? "number" : "text"
+                            }
+                            value={row[col.key]}
+                          />
                         </div>
                       );
-                    }
-
-                    // Render input fields for all other columns
-                    return (
-                      <div className="flex justify-center" key={col.key}>
-                        <input
-                          className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] px-2 py-2 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                          onChange={(e) => {
-                            handleChange(index, col.key, e.target.value);
-                          }}
-                          placeholder="--Enter--"
-                          type={
-                            col.key === "warrantyDuration" ? "number" : "text"
-                          }
-                          value={row[col.key]}
-                        />
-                      </div>
-                    );
-                  })}
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
