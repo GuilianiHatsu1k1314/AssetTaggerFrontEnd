@@ -1,30 +1,37 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { Sidebar } from "./components/-SideBar"; // Adjusted to match standard path
-import { useAssetContext } from "./context/-AssetContext"; // Assumes you implemented the context
+import { Sidebar } from "./components/-SideBar";
+import { useAssetContext } from "./context/-AssetContext";
 
 export const Route = createFileRoute("/AddValue")({
   component: AddAssetPage,
 });
 
 // 1. DYNAMIC SCHEMA CONFIGURATION
-// Swap this array based on which table the user selected!
+// I added an 'options' array to the warrantyUnit column.
 const tableColumns = [
   { isReadOnly: true, key: "assetId", label: "Asset ID" },
   { key: "assetTagDate", label: "Asset Tag Date" },
   { key: "purchaseDate", label: "Asset Purchase Date" },
   { key: "purchasePrice", label: "Asset Purchase Price" },
   { key: "serialNumber", label: "Asset Serial Number" },
-  { key: "warrantyUnit", label: "Asset Warranty Unit Of Measure" },
+  {
+    key: "warrantyUnit",
+    label: "Asset Warranty Unit Of Measure",
+    // This tells our code to render a dropdown instead of a text box
+    options: [
+      { label: "mm (Month)", value: "mm" },
+      { label: "yy (Year)", value: "yy" },
+    ],
+  },
   { key: "warrantyDuration", label: "Asset Warranty Duration" },
 ];
 
 function AddAssetPage() {
   const navigate = useNavigate();
-  const { addAsset } = useAssetContext(); // Pull from global context to save data
+  const { addAsset } = useAssetContext();
 
-  // 2. Helper to dynamically generate a blank row based on the schema
   const getBlankRow = () => {
     const blankRow: Record<string, number | string> = {};
     tableColumns.forEach((col) => {
@@ -33,32 +40,24 @@ function AddAssetPage() {
     return blankRow;
   };
 
-  // State for multiple rows
   const [rows, setRows] = useState([getBlankRow()]);
 
-  // Handle Input Changes dynamically
   const handleChange = (index: number, field: string, value: string) => {
     const updatedRows = [...rows];
     updatedRows[index] = { ...updatedRows[index], [field]: value };
     setRows(updatedRows);
   };
 
-  // Add a blank row
   const handleAddRow = () => {
     setRows([...rows, getBlankRow()]);
   };
 
-  // Submit Logic
   const handleSubmit = () => {
-    // --- NEW VALIDATION LOGIC ---
     let isValid = true;
 
-    // Loop through every row the user has created
     for (const row of rows) {
-      // Loop through every required column
       for (const col of tableColumns) {
         if (!col.isReadOnly) {
-          // If the field is completely empty or just spaces, it's invalid
           const value = row[col.key];
           if (
             value === undefined ||
@@ -66,33 +65,30 @@ function AddAssetPage() {
             String(value).trim() === ""
           ) {
             isValid = false;
-            break; // Stop checking this row, we already found an error
+            break;
           }
         }
       }
-      if (!isValid) break; // Stop checking other rows if we already found an error
+      if (!isValid) break;
     }
 
-    // If validation failed, alert the user and abort saving
     if (!isValid) {
       alert("Please fill out all fields in all rows before saving.");
       return;
     }
-    // ----------------------------
 
     rows.forEach((row) => {
-      // Mock ID generation since we don't have a backend yet
       const newAsset = {
         ...row,
         assetId: `0${Math.floor(Math.random() * 10000)}`,
-        warrantyDuration: Number(row.warrantyDuration) || 0, // Ensure numbers stay numbers
+        warrantyDuration: Number(row.warrantyDuration) || 0,
       } as any;
 
       addAsset(newAsset);
     });
 
     alert(`Successfully added ${rows.length} new asset(s)!`);
-    navigate({ to: "/table/Asset" }); // Send user back to see their new data
+    navigate({ to: "/table/Asset" });
   };
 
   return (
@@ -121,9 +117,8 @@ function AddAssetPage() {
 
         {/* Dynamic Input Table Wrapper */}
         <div className="w-full max-w-[1400px] overflow-x-auto rounded-lg shadow-sm">
-          {/* CHANGED: Increased min-width to 1200px so 7 columns fit nicely */}
           <div className="min-w-[1200px] md:min-w-full">
-            {/* 3. DYNAMIC HEADER ROW */}
+            {/* Header Row */}
             <div
               className="grid gap-2 bg-[#567bfb] px-2 py-6 text-center"
               style={{
@@ -135,13 +130,12 @@ function AddAssetPage() {
                   className="flex items-center justify-center px-1 text-center text-sm font-bold break-words text-black"
                   key={col.key}
                 >
-                  {/* CHANGED: text-lg to text-sm, added break-words */}
                   {col.label}
                 </div>
               ))}
             </div>
 
-            {/* 4. DYNAMIC INPUT ROWS */}
+            {/* Input Rows */}
             <div className="space-y-4 bg-[#1e3a8a] px-2 py-4">
               {rows.map((row, index) => (
                 <div className="grid items-center gap-2" key={index}>
@@ -152,7 +146,7 @@ function AddAssetPage() {
                     }}
                   >
                     {tableColumns.map((col) => {
-                      // If it's the primary key / read-only column, render a placeholder
+                      // 1. READ ONLY FIELDS (Asset ID)
                       if (col.isReadOnly) {
                         return (
                           <div
@@ -164,7 +158,30 @@ function AddAssetPage() {
                         );
                       }
 
-                      // Render input fields for all other columns
+                      // 2. DROPDOWN FIELDS (Warranty Unit)
+                      // If the column has an 'options' array, render a <select>
+                      if (col.options) {
+                        return (
+                          <div className="flex justify-center" key={col.key}>
+                            <select
+                              className="w-full max-w-[140px] cursor-pointer appearance-none rounded-sm bg-[#dcdcdc] px-2 py-2 text-center font-medium text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                              onChange={(e) => {
+                                handleChange(index, col.key, e.target.value);
+                              }}
+                              value={row[col.key]}
+                            >
+                              <option value="">--Select--</option>
+                              {col.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      }
+
+                      // 3. STANDARD TEXT/NUMBER INPUTS
                       return (
                         <div className="flex justify-center" key={col.key}>
                           <input
@@ -188,7 +205,7 @@ function AddAssetPage() {
           </div>
         </div>
 
-        {/* ACTIONS ROW */}
+        {/* Actions */}
         <div className="mt-6 flex w-full max-w-[1400px] items-center justify-between">
           <button
             className="flex items-center gap-2 text-xl font-bold text-black transition-colors hover:text-blue-700"
