@@ -3,8 +3,8 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel, // <-- Imported sorting model
-  SortingState, // <-- Imported sorting state type
+  getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
@@ -34,6 +34,7 @@ const columns = [
     cell: (info) => (
       <Link
         className="font-bold underline hover:text-blue-300"
+        search={{ assetId: info.getValue() }}
         title="View QR Code"
         to="/table/QRPage"
       >
@@ -44,7 +45,7 @@ const columns = [
   }),
   columnHelper.accessor("assetTagDate", {
     header: "AssetTagDate",
-    sortingFn: "datetime", // Tells the table this is a date string
+    sortingFn: "datetime",
   }),
   columnHelper.accessor("purchaseDate", {
     header: "AssetPurchaseDate",
@@ -52,7 +53,6 @@ const columns = [
   }),
   columnHelper.accessor("purchasePrice", {
     header: "AssetPurchasePrice",
-    // Custom sorter: Removes the '₱' symbol and sorts it as an actual number
     sortingFn: (rowA, rowB, columnId) => {
       const a = Number(
         rowA.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
@@ -77,17 +77,17 @@ function AssetPage() {
   const navigate = useNavigate();
 
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false); // Dropdown toggle state
-  const [sorting, setSorting] = useState<SortingState>([]); // Stores active sorting rules
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
     data: assets,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(), // Enables sorting logic
-    onSortingChange: setSorting, // Updates state when sorted
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     state: {
-      sorting, // Hook up sorting state
+      sorting,
     },
   });
 
@@ -206,7 +206,6 @@ function AssetPage() {
                     Sort By
                   </div>
 
-                  {/* Reusable Sort Option Buttons */}
                   <SortMenuItem
                     columnId="assetTagDate"
                     label="Tag Date"
@@ -289,9 +288,6 @@ function AssetPage() {
   );
 }
 
-// ---------------------------------------------------------
-// Helper Component: Sort Menu Button
-// ---------------------------------------------------------
 function SortMenuItem({
   columnId,
   label,
@@ -302,7 +298,7 @@ function SortMenuItem({
   table: any;
 }) {
   const column = table.getColumn(columnId);
-  const isSorted = column?.getIsSorted(); // Returns false | 'asc' | 'desc'
+  const isSorted = column?.getIsSorted();
 
   return (
     <button
@@ -310,8 +306,6 @@ function SortMenuItem({
       onClick={() => column?.toggleSorting()}
     >
       <span>{label}</span>
-
-      {/* Show arrows based on active sort state */}
       <span className="w-4 text-center font-bold text-blue-600">
         {isSorted === "asc" ? "↑" : isSorted === "desc" ? "↓" : ""}
       </span>
