@@ -5,8 +5,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-import { Sidebar } from "./components/-SideBar"; // Keep your exact path
-import { useAssetContext } from "./context/-AssetContext"; // Import your Context
+import { Sidebar } from "./components/-SideBar";
+import { useAssetContext } from "./context/-AssetContext";
 
 // 1. Define expected search params for TanStack Router
 export const Route = createFileRoute("/EditValue")({
@@ -51,7 +51,9 @@ function EditValuePage() {
   }, [search.assetId, assets]);
 
   // Handle Input Changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -105,41 +107,32 @@ function EditValuePage() {
           <h2 className="text-xl font-semibold text-black">Asset</h2>
         </div>
 
-        {/* The Form Table (Modeled after your AddValue layout) */}
-        <div className="w-full max-w-5xl overflow-x-auto rounded-lg shadow-sm">
-          <div className="min-w-[800px] md:min-w-full">
+        {/* The Form Table */}
+        <div className="w-full max-w-[1400px] overflow-x-auto rounded-lg shadow-sm">
+          {/* CHANGED: Increased min-w from 800px to 1200px to prevent text wrapping */}
+          <div className="min-w-[1200px]">
             {/* Header Row (Light Blue) */}
             <div className="grid grid-cols-7 gap-2 bg-[#567bfb] px-2 py-6 text-center">
-              <div className="text-lg font-bold text-black">AssetID</div>
-              <div className="text-lg font-bold text-black">
-                AssetTag
-                <br />
-                Date
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                AssetID
               </div>
-              <div className="text-lg font-bold text-black">
-                AssetPurchase
-                <br />
-                Date
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Tag Date
               </div>
-              <div className="text-lg font-bold text-black">
-                AssetPurchase
-                <br />
-                Price
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Purchase Date
               </div>
-              <div className="text-lg font-bold text-black">
-                AssetSerial
-                <br />
-                Number
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Purchase Price
               </div>
-              <div className="text-lg font-bold text-black">
-                AssetWarrantyUnit
-                <br />
-                OfMeasure
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Serial Number
               </div>
-              <div className="text-lg font-bold text-black">
-                AssetWarranty
-                <br />
-                Duration
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Warranty Unit Of Measure
+              </div>
+              <div className="flex items-center justify-center text-sm font-bold text-black">
+                Asset Warranty Duration
               </div>
             </div>
 
@@ -153,7 +146,7 @@ function EditValuePage() {
               {/* 2. Tag Date (Editable) */}
               <div className="flex justify-center">
                 <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="assetTagDate"
                   onChange={handleChange}
                   value={formData.assetTagDate}
@@ -163,7 +156,7 @@ function EditValuePage() {
               {/* 3. Purchase Date (Editable) */}
               <div className="flex justify-center">
                 <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="purchaseDate"
                   onChange={handleChange}
                   value={formData.purchaseDate}
@@ -173,7 +166,7 @@ function EditValuePage() {
               {/* 4. Price (Editable) */}
               <div className="flex justify-center">
                 <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="purchasePrice"
                   onChange={handleChange}
                   value={formData.purchasePrice}
@@ -183,27 +176,31 @@ function EditValuePage() {
               {/* 5. Serial (Editable) */}
               <div className="flex justify-center">
                 <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="serialNumber"
                   onChange={handleChange}
                   value={formData.serialNumber}
                 />
               </div>
 
-              {/* 6. Warranty Unit (Editable) */}
+              {/* 6. Warranty Unit (UPDATED: Now a Dropdown) */}
               <div className="flex justify-center">
-                <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                <select
+                  className="w-full max-w-[140px] cursor-pointer appearance-none rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="warrantyUnit"
                   onChange={handleChange}
                   value={formData.warrantyUnit}
-                />
+                >
+                  <option value="">--Select--</option>
+                  <option value="mm">mm (Month)</option>
+                  <option value="yy">yy (Year)</option>
+                </select>
               </div>
 
               {/* 7. Warranty Duration (Editable) */}
               <div className="flex justify-center">
                 <input
-                  className="w-full max-w-[120px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
                   name="warrantyDuration"
                   onChange={handleChange}
                   type="number"
