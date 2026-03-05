@@ -1,19 +1,11 @@
 import {
-  Document,
-  Image,
-  Page,
-  PDFDownloadLink,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
-import {
   createFileRoute,
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
+import { toSvg } from "html-to-image";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Sidebar } from "../components/-SideBar";
 import { useAssetContext } from "../context/-AssetContext";
@@ -25,148 +17,14 @@ export const Route = createFileRoute("/table/QRPage")({
   },
 });
 
-// ============================================================================
-// 1. PDF STYLES & COMPONENTS
-// ============================================================================
-const pdfStyles = StyleSheet.create({
-  card: {
-    backgroundColor: "#ffffff",
-    borderColor: "#000000",
-    borderStyle: "solid",
-    borderWidth: 3,
-    height: 230,
-    padding: 20,
-    width: 400,
-  },
-  colon: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 8,
-    width: 10,
-  },
-  contentRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  detailsContainer: {
-    flex: 1,
-    paddingRight: 10,
-  },
-  header: {
-    marginBottom: 15,
-  },
-  headerSubtitle: {
-    fontFamily: "Helvetica",
-    fontSize: 9,
-    textAlign: "center",
-  },
-  headerTitle: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 11,
-    marginBottom: 2,
-    textAlign: "center",
-  },
-  infoRow: {
-    flexDirection: "row",
-    marginBottom: 6,
-  },
-  label: {
-    fontFamily: "Helvetica",
-    fontSize: 8,
-    width: 90,
-  },
-  page: {
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    justifyContent: "center",
-    padding: 20,
-  },
-  qrBoxWrapper: {
-    alignItems: "center",
-    borderColor: "#cccccc",
-    borderStyle: "solid",
-    borderWidth: 1,
-    height: 85,
-    justifyContent: "center",
-    padding: 6,
-    width: 85,
-  },
-  qrImage: {
-    height: "100%",
-    width: "100%",
-  },
-  value: {
-    flex: 1,
-    fontFamily: "Helvetica-Bold",
-    fontSize: 8,
-  },
-});
-
-const PdfInfoRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | string;
-}) => (
-  <View style={pdfStyles.infoRow}>
-    <Text style={pdfStyles.label}>{label}</Text>
-    <Text style={pdfStyles.colon}>:</Text>
-    <Text style={pdfStyles.value}>{value || "-"}</Text>
-  </View>
-);
-
-// The actual PDF Document Layout
-const AssetPDF = ({ asset, qrCodeUrl }: { asset: any; qrCodeUrl: string }) => {
-  // --- FIX: Safely convert '₱' to 'PHP ' so the PDF font can render it properly ---
-  const formattedPrice = asset?.purchasePrice
-    ? String(asset.purchasePrice).replace("₱", "PHP ")
-    : "";
-
-  return (
-    <Document>
-      <Page orientation="landscape" size="A4" style={pdfStyles.page}>
-        <View style={pdfStyles.card} wrap={false}>
-          <View style={pdfStyles.header}>
-            <Text style={pdfStyles.headerTitle}>JDN HEAD OFFICE</Text>
-            <Text style={pdfStyles.headerTitle}>NEPOMUCENO REALTY GROUP</Text>
-            <Text style={pdfStyles.headerSubtitle}>PROPERTY TAG</Text>
-          </View>
-
-          <View style={pdfStyles.contentRow}>
-            <View style={pdfStyles.detailsContainer}>
-              <PdfInfoRow label="Asset ID" value={asset?.assetId} />
-              <PdfInfoRow label="Asset Tag Date" value={asset?.assetTagDate} />
-              <PdfInfoRow label="Purchase Date" value={asset?.purchaseDate} />
-              {/* Using the formatted price here */}
-              <PdfInfoRow label="Purchase Price" value={formattedPrice} />
-              <PdfInfoRow label="Serial Number" value={asset?.serialNumber} />
-              <PdfInfoRow label="Warranty Unit" value={asset?.warrantyUnit} />
-              <PdfInfoRow
-                label="Warranty Duration"
-                value={asset?.warrantyDuration}
-              />
-            </View>
-
-            <View style={pdfStyles.qrBoxWrapper}>
-              <Image src={qrCodeUrl} style={pdfStyles.qrImage} />
-            </View>
-          </View>
-        </View>
-      </Page>
-    </Document>
-  );
-};
-
-// ============================================================================
-// 2. WEB PAGE COMPONENTS (HTML/Tailwind)
-// ============================================================================
+// CHANGED: Switched to strict Flexbox widths. 'html-to-image' handles Flex
+// much more reliably than CSS Grid when rendering DOM nodes to Canvas/SVG.
 function InfoRow({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="grid grid-cols-[220px_20px_1fr] items-start">
-      <span className="font-medium text-gray-800">{label}</span>
-      <span className="text-center font-bold text-gray-800">:</span>
-      <span className="truncate font-bold text-black">{value || "-"}</span>
+    <div className="flex flex-row items-center text-lg">
+      <span className="w-48 font-medium text-gray-800">{label}</span>
+      <span className="w-8 text-center font-bold text-gray-800">:</span>
+      <span className="flex-1 font-bold text-black">{value || "-"}</span>
     </div>
   );
 }
@@ -189,7 +47,43 @@ function QRViewPage() {
     ? JSON.stringify(selectedAsset)
     : "Asset Not Found";
 
-  const pdfQrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeValue)}`;
+  // Formatter to ensure the price always shows the Philippine Peso sign
+  const rawPrice = selectedAsset?.purchasePrice || "";
+  const formattedPrice = rawPrice
+    ? String(rawPrice).includes("₱")
+      ? rawPrice
+      : `₱${rawPrice}`
+    : "";
+
+  const fullCardRef = useRef<HTMLDivElement>(null);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadImage = useCallback(
+    (ref: React.RefObject<HTMLDivElement>, fileName: string) => {
+      if (ref.current === null) {
+        return;
+      }
+
+      // Changed from toPng to toSvg
+      toSvg(ref.current, {
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+        // Force the rendering engine to respect the exact dimensions of the node
+        style: { margin: "0", transform: "scale(1)" },
+      })
+        .then((dataUrl) => {
+          const link = document.createElement("a");
+          link.download = fileName;
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch((err) => {
+          console.error("Oops, something went wrong!", err);
+          alert("Failed to download image. Please try again.");
+        });
+    },
+    [],
+  );
 
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
@@ -224,118 +118,155 @@ function QRViewPage() {
           </h1>
         </div>
 
-        {/* The Web Card */}
-        <div className="relative mx-auto max-w-5xl rounded-sm border-8 border-black bg-white p-6 shadow-lg md:p-16">
-          <div className="mb-10 space-y-1 text-center md:mb-16">
-            <h2 className="text-lg font-bold tracking-wide text-black md:text-xl">
-              JDN HEAD OFFICE
-            </h2>
-            <h3 className="text-lg font-bold tracking-wide text-black md:text-xl">
-              NEPOMUCENO REALTY GROUP
-            </h3>
-            <h4 className="text-lg font-normal tracking-wide text-black md:text-xl">
-              PROPERTY TAG
-            </h4>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-10 md:flex-row md:items-start md:gap-12">
-            <div className="w-full max-w-lg flex-1 space-y-3 text-base md:space-y-4 md:text-lg">
-              <InfoRow label="Asset ID" value={selectedAsset?.assetId || ""} />
-              <InfoRow
-                label="Asset Tag Date"
-                value={selectedAsset?.assetTagDate || ""}
-              />
-              <InfoRow
-                label="Purchase Date"
-                value={selectedAsset?.purchaseDate || ""}
-              />
-              <InfoRow
-                label="Purchase Price"
-                value={selectedAsset?.purchasePrice || ""}
-              />
-              <InfoRow
-                label="Serial Number"
-                value={selectedAsset?.serialNumber || ""}
-              />
-              <InfoRow
-                label="Warranty Unit"
-                value={selectedAsset?.warrantyUnit || ""}
-              />
-              <InfoRow
-                label="Warranty Duration"
-                value={selectedAsset?.warrantyDuration || ""}
-              />
+        {/* ========================================================= */}
+        {/* WRAPPER: Allows scrolling on small screens without breaking the tag's shape */}
+        {/* ========================================================= */}
+        <div className="w-full overflow-x-auto pb-6">
+          {/* THE WEB CARD: Forced to exactly 800px wide for print-perfect consistency */}
+          <div
+            className="relative mx-auto flex w-[800px] shrink-0 flex-col rounded-sm border-[10px] border-black bg-white px-12 py-14 shadow-lg"
+            ref={fullCardRef}
+          >
+            <div className="mb-14 text-center">
+              <h2 className="text-2xl font-bold tracking-wide text-black">
+                JDN HEAD OFFICE
+              </h2>
+              <h3 className="text-2xl font-bold tracking-wide text-black">
+                NEPOMUCENO REALTY GROUP
+              </h3>
+              <h4 className="mt-2 text-xl font-normal tracking-wide text-black">
+                PROPERTY TAG
+              </h4>
             </div>
 
-            <div className="flex items-center justify-center md:mr-12">
-              <div className="flex h-48 w-48 items-center justify-center border border-gray-300 bg-white p-4 md:h-56 md:w-56">
-                {selectedAsset ? (
-                  <div className="flex h-full w-full items-center justify-center bg-white p-2">
-                    <QRCodeSVG
-                      bgColor={"#ffffff"}
-                      fgColor={"#000000"}
-                      level={"M"}
-                      marginSize={0}
-                      size={180}
-                      style={{
-                        height: "auto",
-                        maxWidth: "100%",
-                        width: "100%",
-                      }}
-                      value={qrCodeValue}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <p className="mb-2 font-bold text-red-500">
-                      Asset Not Found
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      ID: {search.assetId}
-                    </p>
-                  </div>
-                )}
+            <div className="flex flex-row items-center justify-between px-4">
+              {/* Left Side: Data Fields */}
+              <div className="flex flex-col space-y-4">
+                <InfoRow
+                  label="Asset ID"
+                  value={selectedAsset?.assetId || ""}
+                />
+                <InfoRow
+                  label="Asset Tag Date"
+                  value={selectedAsset?.assetTagDate || ""}
+                />
+                <InfoRow
+                  label="Purchase Date"
+                  value={selectedAsset?.purchaseDate || ""}
+                />
+                <InfoRow label="Purchase Price" value={formattedPrice} />
+                <InfoRow
+                  label="Serial Number"
+                  value={selectedAsset?.serialNumber || ""}
+                />
+                <InfoRow
+                  label="Warranty Unit"
+                  value={selectedAsset?.warrantyUnit || ""}
+                />
+                <InfoRow
+                  label="Warranty Duration"
+                  value={selectedAsset?.warrantyDuration || ""}
+                />
+              </div>
+
+              {/* Right Side: QR Code Wrapper */}
+              <div className="flex shrink-0 items-center justify-center pl-8">
+                <div
+                  className="flex h-56 w-56 items-center justify-center border-2 border-gray-300 bg-white p-3"
+                  ref={qrCodeRef}
+                >
+                  {selectedAsset ? (
+                    <div className="flex h-full w-full items-center justify-center bg-white">
+                      <QRCodeSVG
+                        bgColor={"#ffffff"}
+                        fgColor={"#000000"}
+                        level={"M"}
+                        marginSize={0}
+                        size={190}
+                        style={{
+                          height: "auto",
+                          maxWidth: "100%",
+                          width: "100%",
+                        }}
+                        value={qrCodeValue}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="mb-2 font-bold text-red-500">
+                        Asset Not Found
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        ID: {search.assetId}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* PDF DOWNLOAD BUTTON */}
-        <div className="mx-auto mt-8 flex max-w-5xl justify-end">
+        {/* ========================================================= */}
+        {/* IMAGE DOWNLOAD BUTTONS */}
+        {/* ========================================================= */}
+        <div className="mx-auto mt-4 flex max-w-[800px] flex-wrap justify-end gap-4">
           {selectedAsset ? (
-            <PDFDownloadLink
-              document={
-                <AssetPDF asset={selectedAsset} qrCodeUrl={pdfQrImageUrl} />
-              }
-              fileName={`PropertyTag_${selectedAsset.assetId}.pdf`}
-            >
-              {({ loading }) => (
-                <button
-                  className={`flex items-center gap-2 rounded-full px-8 py-3 text-lg font-bold text-white shadow-md transition-colors ${
-                    loading
-                      ? "cursor-not-allowed bg-gray-400"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-                  disabled={loading}
+            <>
+              <button
+                className="flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-base font-bold text-white shadow-md transition-colors hover:bg-blue-700 md:text-lg"
+                onClick={() => {
+                  handleDownloadImage(
+                    fullCardRef,
+                    // CHANGED .png to .svg here:
+                    `PropertyTag_${selectedAsset.assetId}.svg`,
+                  );
+                }}
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="24"
                 >
-                  <svg
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" x2="12" y1="15" y2="3"></line>
-                  </svg>
-                  {loading ? "Preparing PDF..." : "Download Asset PDF"}
-                </button>
-              )}
-            </PDFDownloadLink>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" x2="12" y1="15" y2="3"></line>
+                </svg>
+                Download Full Tag (SVG)
+              </button>
+
+              <button
+                className="flex items-center gap-2 rounded-full border-2 border-black bg-white px-6 py-3 text-base font-bold text-black shadow-md transition-colors hover:bg-gray-100 md:text-lg"
+                onClick={() => {
+                  handleDownloadImage(
+                    qrCodeRef,
+                    // CHANGED .png to .svg here:
+                    `QRCode_${selectedAsset.assetId}.svg`,
+                  );
+                }}
+              >
+                <svg
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="24"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" x2="12" y1="15" y2="3"></line>
+                </svg>
+                Download QR Code (SVG)
+              </button>
+            </>
           ) : null}
         </div>
       </main>
