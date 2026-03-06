@@ -1,10 +1,18 @@
 import { Link } from "@tanstack/react-router";
 
 export function Sidebar() {
+  // Check if the user logged in as an admin
+  // (In a real app, you would use React Context or a global state manager for this)
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+  const handleLogout = () => {
+    // Clear the admin status when logging out
+    localStorage.removeItem("isAdmin");
+  };
+
   return (
     <>
       {/* 1. DESKTOP SIDEBAR (Hidden on Mobile) */}
-      {/* ADDED: 'sticky top-0', 'shrink-0', and 'overflow-hidden' */}
       <div className="sticky top-0 hidden h-screen w-32 shrink-0 flex-col items-center overflow-hidden bg-[#1d4ed8] py-10 text-white shadow-2xl md:flex">
         <div className="mb-14">
           <h1 className="text-4xl font-black tracking-tighter text-white">
@@ -31,10 +39,20 @@ export function Sidebar() {
           >
             Scan QR
           </Link>
+
+          {/* --- ADMIN LINK (Desktop) --- */}
+          {isAdmin && (
+            <Link
+              className="text-xl font-medium transition-colors hover:text-blue-200"
+              to="/AdminPage" // <-- Adjust this to match your actual admin route
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="mt-auto">
-          <Link to="/">
+          <Link onClick={handleLogout} to="/">
             <button
               className="group flex items-center text-black transition-colors hover:text-white"
               title="Logout"
@@ -59,7 +77,7 @@ export function Sidebar() {
       </div>
 
       {/* 2. MOBILE BOTTOM NAVIGATION (Hidden on Desktop) */}
-      <div className="fixed right-0 bottom-0 left-0 z-50 flex h-20 items-center justify-between border-t border-gray-300 bg-white px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-50 flex h-20 items-center justify-between border-t border-gray-300 bg-white px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden">
         <Link
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
           to="/"
@@ -138,7 +156,29 @@ export function Sidebar() {
           <span className="text-[10px] font-medium">Tables</span>
         </Link>
 
-        <Link to="/">
+        {/* --- ADMIN LINK (Mobile) --- */}
+        {isAdmin && (
+          <Link
+            className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
+            to="/Admin" // <-- Adjust this to match your actual admin route
+          >
+            <svg
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="24"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span className="text-[10px] font-medium">Admin</span>
+          </Link>
+        )}
+
+        <Link onClick={handleLogout} to="/">
           <button className="flex flex-col items-center gap-1 text-black hover:text-blue-600">
             <svg
               fill="none"
@@ -151,7 +191,7 @@ export function Sidebar() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            <span className="text-[10px] font-medium">Profile</span>
+            <span className="text-[10px] font-medium">Logout</span>
           </button>
         </Link>
       </div>
