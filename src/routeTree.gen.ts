@@ -14,6 +14,7 @@ import { Route as TableSelectionRouteImport } from './routes/TableSelection'
 import { Route as ScanQRRouteImport } from './routes/ScanQR'
 import { Route as LandingPageRouteImport } from './routes/LandingPage'
 import { Route as EditValueRouteImport } from './routes/EditValue'
+import { Route as AdminPageRouteImport } from './routes/AdminPage'
 import { Route as AddValueRouteImport } from './routes/AddValue'
 import { Route as TableRouteRouteImport } from './routes/table/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -44,6 +45,11 @@ const LandingPageRoute = LandingPageRouteImport.update({
 const EditValueRoute = EditValueRouteImport.update({
   id: '/EditValue',
   path: '/EditValue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPageRoute = AdminPageRouteImport.update({
+  id: '/AdminPage',
+  path: '/AdminPage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddValueRoute = AddValueRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/table': typeof TableRouteRouteWithChildren
   '/AddValue': typeof AddValueRoute
+  '/AdminPage': typeof AdminPageRoute
   '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
   '/ScanQR': typeof ScanQRRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/AddValue': typeof AddValueRoute
+  '/AdminPage': typeof AdminPageRoute
   '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
   '/ScanQR': typeof ScanQRRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/table': typeof TableRouteRouteWithChildren
   '/AddValue': typeof AddValueRoute
+  '/AdminPage': typeof AdminPageRoute
   '/EditValue': typeof EditValueRoute
   '/LandingPage': typeof LandingPageRoute
   '/ScanQR': typeof ScanQRRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/'
     | '/table'
     | '/AddValue'
+    | '/AdminPage'
     | '/EditValue'
     | '/LandingPage'
     | '/ScanQR'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/AddValue'
+    | '/AdminPage'
     | '/EditValue'
     | '/LandingPage'
     | '/ScanQR'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/'
     | '/table'
     | '/AddValue'
+    | '/AdminPage'
     | '/EditValue'
     | '/LandingPage'
     | '/ScanQR'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TableRouteRoute: typeof TableRouteRouteWithChildren
   AddValueRoute: typeof AddValueRoute
+  AdminPageRoute: typeof AdminPageRoute
   EditValueRoute: typeof EditValueRoute
   LandingPageRoute: typeof LandingPageRoute
   ScanQRRoute: typeof ScanQRRoute
@@ -203,6 +216,13 @@ declare module '@tanstack/react-router' {
       path: '/EditValue'
       fullPath: '/EditValue'
       preLoaderRoute: typeof EditValueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/AdminPage': {
+      id: '/AdminPage'
+      path: '/AdminPage'
+      fullPath: '/AdminPage'
+      preLoaderRoute: typeof AdminPageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/AddValue': {
@@ -270,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TableRouteRoute: TableRouteRouteWithChildren,
   AddValueRoute: AddValueRoute,
+  AdminPageRoute: AdminPageRoute,
   EditValueRoute: EditValueRoute,
   LandingPageRoute: LandingPageRoute,
   ScanQRRoute: ScanQRRoute,
