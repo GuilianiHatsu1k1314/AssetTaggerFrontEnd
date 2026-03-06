@@ -13,13 +13,15 @@ export function Sidebar() {
   return (
     <>
       {/* 1. DESKTOP SIDEBAR (Hidden on Mobile) */}
-      <div className="sticky top-0 hidden h-screen w-32 shrink-0 flex-col items-center overflow-hidden bg-[#1d4ed8] py-10 text-white shadow-2xl md:flex">
+      <div className="sticky top-0 hidden h-screen w-32 shrink-0 flex-col items-center overflow-hidden bg-[#0031AB] py-10 text-white shadow-2xl md:flex">
         <div className="mb-14">
-          <h1 className="text-4xl font-black tracking-tighter text-white">
-            JDN
-          </h1>
-        </div>
-
+          <img
+            alt="Logo"
+            className="h-10 w-auto"
+            src="public\jdnlogowhite.png"
+          />
+        </div>{" "}
+        {/* <--- FIX: Added this missing closing div! */}
         <nav className="flex w-full flex-col gap-8 text-center">
           <Link
             className="text-xl font-medium transition-colors hover:text-blue-200"
@@ -44,13 +46,12 @@ export function Sidebar() {
           {isAdmin && (
             <Link
               className="text-xl font-medium transition-colors hover:text-blue-200"
-              to="/AdminPage" // <-- Adjust this to match your actual admin route
+              to="/AdminPage"
             >
               Admin
             </Link>
           )}
         </nav>
-
         <div className="mt-auto">
           <Link onClick={handleLogout} to="/">
             <button
@@ -160,7 +161,7 @@ export function Sidebar() {
         {isAdmin && (
           <Link
             className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
-            to="/Admin" // <-- Adjust this to match your actual admin route
+            to="/AdminPage" // FIX: Matched desktop route
           >
             <svg
               fill="none"

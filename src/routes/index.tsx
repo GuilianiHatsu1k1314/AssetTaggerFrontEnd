@@ -36,9 +36,7 @@ function LoginPage() {
     }
     // 4. Handle incorrect credentials
     else {
-      setErrorMessage(
-        "Invalid username or password. Try admin/admin123 or user/user123.",
-      );
+      setErrorMessage("Invalid username or password. Please try again.");
     }
   };
 
@@ -46,12 +44,14 @@ function LoginPage() {
     // Full Screen Centered Container
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 p-4">
       {/* The Blue Card */}
-      <div className="flex w-full max-w-sm flex-col rounded-2xl bg-[#1e439b] p-8 shadow-2xl md:max-w-4xl md:flex-row md:items-center md:justify-between md:gap-16 md:p-12">
+      <div className="flex w-full max-w-sm flex-col rounded-2xl bg-[#0031AB] p-8 shadow-2xl md:max-w-4xl md:flex-row md:items-center md:justify-between md:gap-16 md:p-12">
         {/* Left Side (Logo & Title) */}
         <div className="mb-8 text-center md:mb-0 md:w-1/2 md:text-left">
-          <h1 className="text-5xl font-black tracking-tight text-white md:text-6xl">
-            JDN
-          </h1>
+          <img
+            alt="Logo"
+            className="h-20 w-auto"
+            src="public\jdnlogowhite.png"
+          />
           <h2 className="mt-2 text-2xl font-medium text-white md:mt-6 md:text-4xl">
             Sign In
           </h2>
