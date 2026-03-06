@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import JDNLogo from "/jdnlogowhite.png";
+
 export const Route = createFileRoute("/")({
   component: LoginPage,
 });
@@ -47,11 +49,7 @@ function LoginPage() {
       <div className="flex w-full max-w-sm flex-col rounded-2xl bg-[#0031AB] p-8 shadow-2xl md:max-w-4xl md:flex-row md:items-center md:justify-between md:gap-16 md:p-12">
         {/* Left Side (Logo & Title) */}
         <div className="mb-8 text-center md:mb-0 md:w-1/2 md:text-left">
-          <img
-            alt="Logo"
-            className="h-20 w-auto"
-            src="public\jdnlogowhite.png"
-          />
+          <img alt="Logo" className="h-20 w-auto" src={JDNLogo} />
           <h2 className="mt-2 text-2xl font-medium text-white md:mt-6 md:text-4xl">
             Sign In
           </h2>
