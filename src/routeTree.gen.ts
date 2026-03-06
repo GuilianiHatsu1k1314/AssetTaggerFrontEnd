@@ -21,6 +21,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TableIndexRouteImport } from './routes/table/index'
 import { Route as TableQRPageRouteImport } from './routes/table/QRPage'
 import { Route as TableAssetRouteImport } from './routes/table/Asset'
+import { Route as AdminpagesRegisterUserRouteImport } from './routes/adminpages/RegisterUser'
+import { Route as AdminpagesManageUserRouteImport } from './routes/adminpages/ManageUser'
+import { Route as AdminpagesManageTableRouteImport } from './routes/adminpages/ManageTable'
+import { Route as AdminpagesAdminPageRouteImport } from './routes/adminpages/AdminPage'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -82,6 +86,26 @@ const TableAssetRoute = TableAssetRouteImport.update({
   path: '/Asset',
   getParentRoute: () => TableRouteRoute,
 } as any)
+const AdminpagesRegisterUserRoute = AdminpagesRegisterUserRouteImport.update({
+  id: '/adminpages/RegisterUser',
+  path: '/adminpages/RegisterUser',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminpagesManageUserRoute = AdminpagesManageUserRouteImport.update({
+  id: '/adminpages/ManageUser',
+  path: '/adminpages/ManageUser',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminpagesManageTableRoute = AdminpagesManageTableRouteImport.update({
+  id: '/adminpages/ManageTable',
+  path: '/adminpages/ManageTable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminpagesAdminPageRoute = AdminpagesAdminPageRouteImport.update({
+  id: '/adminpages/AdminPage',
+  path: '/adminpages/AdminPage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +117,10 @@ export interface FileRoutesByFullPath {
   '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
+  '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
@@ -106,6 +134,10 @@ export interface FileRoutesByTo {
   '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
+  '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table': typeof TableIndexRoute
@@ -121,6 +153,10 @@ export interface FileRoutesById {
   '/ScanQR': typeof ScanQRRoute
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
+  '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
+  '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
@@ -137,6 +173,10 @@ export interface FileRouteTypes {
     | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/adminpages/AdminPage'
+    | '/adminpages/ManageTable'
+    | '/adminpages/ManageUser'
+    | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/QRPage'
     | '/table/'
@@ -150,6 +190,10 @@ export interface FileRouteTypes {
     | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/adminpages/AdminPage'
+    | '/adminpages/ManageTable'
+    | '/adminpages/ManageUser'
+    | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/QRPage'
     | '/table'
@@ -164,6 +208,10 @@ export interface FileRouteTypes {
     | '/ScanQR'
     | '/TableSelection'
     | '/about'
+    | '/adminpages/AdminPage'
+    | '/adminpages/ManageTable'
+    | '/adminpages/ManageUser'
+    | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/QRPage'
     | '/table/'
@@ -179,6 +227,10 @@ export interface RootRouteChildren {
   ScanQRRoute: typeof ScanQRRoute
   TableSelectionRoute: typeof TableSelectionRoute
   AboutRoute: typeof AboutRoute
+  AdminpagesAdminPageRoute: typeof AdminpagesAdminPageRoute
+  AdminpagesManageTableRoute: typeof AdminpagesManageTableRoute
+  AdminpagesManageUserRoute: typeof AdminpagesManageUserRoute
+  AdminpagesRegisterUserRoute: typeof AdminpagesRegisterUserRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -267,6 +319,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableAssetRouteImport
       parentRoute: typeof TableRouteRoute
     }
+    '/adminpages/RegisterUser': {
+      id: '/adminpages/RegisterUser'
+      path: '/adminpages/RegisterUser'
+      fullPath: '/adminpages/RegisterUser'
+      preLoaderRoute: typeof AdminpagesRegisterUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adminpages/ManageUser': {
+      id: '/adminpages/ManageUser'
+      path: '/adminpages/ManageUser'
+      fullPath: '/adminpages/ManageUser'
+      preLoaderRoute: typeof AdminpagesManageUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adminpages/ManageTable': {
+      id: '/adminpages/ManageTable'
+      path: '/adminpages/ManageTable'
+      fullPath: '/adminpages/ManageTable'
+      preLoaderRoute: typeof AdminpagesManageTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adminpages/AdminPage': {
+      id: '/adminpages/AdminPage'
+      path: '/adminpages/AdminPage'
+      fullPath: '/adminpages/AdminPage'
+      preLoaderRoute: typeof AdminpagesAdminPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -296,6 +376,10 @@ const rootRouteChildren: RootRouteChildren = {
   ScanQRRoute: ScanQRRoute,
   TableSelectionRoute: TableSelectionRoute,
   AboutRoute: AboutRoute,
+  AdminpagesAdminPageRoute: AdminpagesAdminPageRoute,
+  AdminpagesManageTableRoute: AdminpagesManageTableRoute,
+  AdminpagesManageUserRoute: AdminpagesManageUserRoute,
+  AdminpagesRegisterUserRoute: AdminpagesRegisterUserRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

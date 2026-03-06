@@ -27,10 +27,9 @@ function AdminDashboard() {
         {/* Action Buttons / Cards Grid */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {/* 1. Register Users */}
-          {/* Replace 'to="."' with your actual route later, e.g. to="/adminpages/Register" */}
           <Link
             className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
-            to="."
+            to="/adminpages/RegisterUser"
           >
             <div className="mb-6 rounded-full bg-[#e0e7ff] p-5 text-[#1d4ed8] transition-colors group-hover:bg-[#1d4ed8] group-hover:text-white">
               <svg
@@ -58,7 +57,7 @@ function AdminDashboard() {
           {/* 2. Manage Users */}
           <Link
             className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
-            to="."
+            to="/adminpages/ManageUser"
           >
             <div className="mb-6 rounded-full bg-[#e0e7ff] p-5 text-[#1d4ed8] transition-colors group-hover:bg-[#1d4ed8] group-hover:text-white">
               <svg
@@ -86,7 +85,7 @@ function AdminDashboard() {
           {/* 3. Manage Tables */}
           <Link
             className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
-            to="."
+            to="/adminpages/ManageTable"
           >
             <div className="mb-6 rounded-full bg-[#e0e7ff] p-5 text-[#1d4ed8] transition-colors group-hover:bg-[#1d4ed8] group-hover:text-white">
               <svg
