@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
+import JDNLogo from "/jdnlogowhite.png";
+
 export function Sidebar() {
   // Check if the user logged in as an admin
   // (In a real app, you would use React Context or a global state manager for this)
@@ -15,11 +17,7 @@ export function Sidebar() {
       {/* 1. DESKTOP SIDEBAR (Hidden on Mobile) */}
       <div className="sticky top-0 hidden h-screen w-32 shrink-0 flex-col items-center overflow-hidden bg-[#0031AB] py-10 text-white shadow-2xl md:flex">
         <div className="mb-14">
-          <img
-            alt="Logo"
-            className="h-10 w-auto"
-            src="public\jdnlogowhite.png"
-          />
+          <img alt="Logo" className="h-10 w-auto" src={JDNLogo} />
         </div>{" "}
         {/* <--- FIX: Added this missing closing div! */}
         <nav className="flex w-full flex-col gap-8 text-center">
@@ -46,7 +44,7 @@ export function Sidebar() {
           {isAdmin && (
             <Link
               className="text-xl font-medium transition-colors hover:text-blue-200"
-              to="/AdminPage"
+              to="/adminpages/AdminPage"
             >
               Admin
             </Link>
