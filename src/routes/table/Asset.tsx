@@ -3,6 +3,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel, // <--- 1. Imported the pagination model
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -84,7 +85,13 @@ function AssetPage() {
     columns,
     data: assets,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(), // <--- 2. Added to table config
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      pagination: {
+        pageSize: 5, // <--- Set default rows per page to 5
+      },
+    },
     onSortingChange: setSorting,
     state: {
       sorting,
@@ -234,7 +241,7 @@ function AssetPage() {
 
         {/* Table UI Wrapper */}
         <div
-          className={`w-full overflow-x-auto rounded-lg shadow-lg transition-all ${isEditMode ? "ring-4 ring-yellow-400" : ""}`}
+          className={`w-full overflow-x-auto rounded-t-lg shadow-lg transition-all ${isEditMode ? "ring-4 ring-yellow-400" : ""}`}
         >
           <table className="w-full min-w-200 table-auto text-left text-sm md:min-w-full">
             <thead className="h-16 bg-[#567bfb] text-base font-bold text-black">
@@ -282,6 +289,57 @@ function AssetPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* ========================================================= */}
+        {/* 3. PAGINATION CONTROLS */}
+        {/* ========================================================= */}
+        <div className="flex items-center justify-between rounded-b-lg border-t border-gray-300 bg-white px-6 py-4 shadow-lg">
+          {/* Dropdown to select rows per page */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">Rows per page:</span>
+            <select
+              className="cursor-pointer rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              onChange={(e) => {
+                table.setPageSize(Number(e.target.value));
+              }}
+              value={table.getState().pagination.pageSize}
+            >
+              {[5, 10, 15, 20].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Next/Prev Navigation Buttons */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-700">
+              Page <strong>{table.getState().pagination.pageIndex + 1}</strong>{" "}
+              of <strong>{table.getPageCount()}</strong>
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                className="rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!table.getCanPreviousPage()}
+                onClick={() => {
+                  table.previousPage();
+                }}
+              >
+                Previous
+              </button>
+              <button
+                className="rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!table.getCanNextPage()}
+                onClick={() => {
+                  table.nextPage();
+                }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
