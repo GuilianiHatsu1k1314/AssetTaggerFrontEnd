@@ -10,7 +10,6 @@ export const Route = createFileRoute("/adminpages/RegisterUser")({
 function RegisterUserPage() {
   const navigate = useNavigate();
 
-  // State to hold the new user's information
   const [formData, setFormData] = useState({
     fullName: "",
     password: "",
@@ -18,7 +17,6 @@ function RegisterUserPage() {
     username: "",
   });
 
-  // Handle input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -28,15 +26,31 @@ function RegisterUserPage() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Here is where you would normally send the data to your backend/API
-    console.log("Registering new user:", formData);
-    alert(`Successfully registered ${formData.role}: ${formData.username}`);
+    // 1. Get the existing list of users from localStorage, or start with an empty array
+    const existingUsersString = localStorage.getItem("app_users");
+    const existingUsers = existingUsersString
+      ? JSON.parse(existingUsersString)
+      : [];
 
-    // Redirect back to the Admin Dashboard after successful registration
+    // 2. Check if the username already exists to prevent duplicates
+    const userExists = existingUsers.some(
+      (u: any) => u.username === formData.username,
+    );
+    if (userExists) {
+      alert("Registration failed: That username already exists!");
+      return;
+    }
+
+    // 3. Add the new user to the list
+    const updatedUsers = [...existingUsers, formData];
+
+    // 4. Save the updated list back to localStorage
+    localStorage.setItem("app_users", JSON.stringify(updatedUsers));
+
+    alert(`Successfully registered ${formData.role}: ${formData.username}`);
     navigate({ to: "/adminpages/AdminPage" });
   };
 
@@ -45,7 +59,6 @@ function RegisterUserPage() {
       <Sidebar />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
-        {/* Header & Back Button */}
         <div className="mb-8 flex items-center gap-4">
           <button
             className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200"
@@ -79,16 +92,14 @@ function RegisterUserPage() {
           </div>
         </div>
 
-        {/* Registration Form Card */}
         <div className="mx-auto max-w-2xl rounded-2xl bg-white p-6 shadow-lg md:p-10">
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-            {/* Full Name Input */}
             <div className="flex flex-col gap-2">
               <label
                 className="text-sm font-semibold text-gray-700"
                 htmlFor="fullName"
               >
-                Full Name
+                Employee Full Name
               </label>
               <input
                 className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-black focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
@@ -102,7 +113,6 @@ function RegisterUserPage() {
               />
             </div>
 
-            {/* Username Input */}
             <div className="flex flex-col gap-2">
               <label
                 className="text-sm font-semibold text-gray-700"
@@ -122,7 +132,6 @@ function RegisterUserPage() {
               />
             </div>
 
-            {/* Password Input */}
             <div className="flex flex-col gap-2">
               <label
                 className="text-sm font-semibold text-gray-700"
@@ -142,7 +151,6 @@ function RegisterUserPage() {
               />
             </div>
 
-            {/* Role Dropdown */}
             <div className="flex flex-col gap-2">
               <label
                 className="text-sm font-semibold text-gray-700"
@@ -157,12 +165,11 @@ function RegisterUserPage() {
                 onChange={handleChange}
                 value={formData.role}
               >
-                <option value="Standard User">User</option>
+                <option value="Standard User">Standard User</option>
                 <option value="Admin">Administrator</option>
               </select>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-4 flex flex-col-reverse justify-end gap-4 sm:flex-row">
               <button
                 className="rounded-full border-2 border-gray-300 bg-white px-8 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 focus:outline-none"
