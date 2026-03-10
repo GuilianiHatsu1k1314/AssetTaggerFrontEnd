@@ -3,7 +3,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel, // <--- 1. Imported the pagination model
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -34,7 +34,7 @@ const columns = [
   columnHelper.accessor("assetId", {
     cell: (info) => (
       <Link
-        className="font-bold underline hover:text-blue-300"
+        className="font-semibold text-blue-600 hover:text-blue-800 hover:underline"
         search={{ assetId: info.getValue() }}
         title="View QR Code"
         to="/table/QRPage"
@@ -42,18 +42,18 @@ const columns = [
         {info.getValue()}
       </Link>
     ),
-    header: "AssetID",
+    header: "Asset ID",
   }),
   columnHelper.accessor("assetTagDate", {
-    header: "AssetTagDate",
+    header: "Tag Date",
     sortingFn: "datetime",
   }),
   columnHelper.accessor("purchaseDate", {
-    header: "AssetPurchaseDate",
+    header: "Purchase Date",
     sortingFn: "datetime",
   }),
   columnHelper.accessor("purchasePrice", {
-    header: "AssetPurchasePrice",
+    header: "Purchase Price",
     sortingFn: (rowA, rowB, columnId) => {
       const a = Number(
         rowA.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
@@ -64,12 +64,12 @@ const columns = [
       return a < b ? -1 : a > b ? 1 : 0;
     },
   }),
-  columnHelper.accessor("serialNumber", { header: "AssetSerialNumber" }),
+  columnHelper.accessor("serialNumber", { header: "Serial Number" }),
   columnHelper.accessor("warrantyUnit", {
-    header: "AssetWarrantyUnitOfMeasure",
+    header: "Warranty Unit",
   }),
   columnHelper.accessor("warrantyDuration", {
-    header: "AssetWarrantyDuration",
+    header: "Warranty Duration",
   }),
 ];
 
@@ -85,11 +85,11 @@ function AssetPage() {
     columns,
     data: assets,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(), // <--- 2. Added to table config
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
       pagination: {
-        pageSize: 5, // <--- Set default rows per page to 5
+        pageSize: 5,
       },
     },
     onSortingChange: setSorting,
@@ -111,22 +111,27 @@ function AssetPage() {
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
         {/* Breadcrumb */}
-        <div className="mb-6 text-lg font-medium text-black md:text-xl">
-          <Link className="hover:underline" to="/TableSelection">
+        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
+          <Link
+            className="hover:text-blue-600 hover:underline"
+            to="/TableSelection"
+          >
             Table Selection
           </Link>
-          <span className="mx-2">&gt;</span>
-          <span>Table Display</span>
+          <span>/</span>
+          <span className="text-gray-900">Table Display</span>
         </div>
 
         {/* Toolbar */}
-        <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <h1 className="text-2xl font-bold text-black">Asset</h1>
+        <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Asset Table
+          </h1>
 
           <div className="relative w-full md:max-w-md">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg
-                className="h-5 w-5 text-gray-500"
+                className="h-5 w-5 text-gray-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -140,25 +145,38 @@ function AssetPage() {
               </svg>
             </div>
             <input
-              className="block w-full rounded-full bg-gray-200 py-2 pr-3 pl-10 text-gray-700 placeholder-gray-500 focus:outline-none"
+              className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-10 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               placeholder="Search in Table"
               type="text"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-black">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
-              className="flex items-center gap-1 font-medium hover:text-blue-600"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
               to="/AddValue"
             >
-              <span className="text-2xl leading-none font-light">+</span> Add
+              <svg
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                width="16"
+              >
+                <line x1="12" x2="12" y1="5" y2="19"></line>
+                <line x1="5" x2="19" y1="12" y2="12"></line>
+              </svg>
+              Add Asset
             </Link>
 
             <button
-              className={`flex items-center gap-1 rounded px-2 py-1 font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium shadow-sm transition-colors focus:outline-none ${
                 isEditMode
-                  ? "bg-yellow-400 text-black shadow-md"
-                  : "hover:text-blue-600"
+                  ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                  : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
               onClick={() => {
                 setIsEditMode(!isEditMode);
@@ -166,10 +184,10 @@ function AssetPage() {
             >
               <svg
                 fill="none"
-                height="20"
+                height="16"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                width="20"
+                width="16"
               >
                 <path
                   d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
@@ -178,23 +196,23 @@ function AssetPage() {
                   strokeWidth={2}
                 />
               </svg>
-              {isEditMode ? "Select Row to Edit" : "Edit"}
+              {isEditMode ? "Select Row to Edit" : "Edit Mode"}
             </button>
 
             {/* FILTER DROPDOWN CONTAINER */}
             <div className="relative">
               <button
-                className="flex items-center gap-1 font-medium hover:text-blue-600 focus:outline-none"
+                className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none"
                 onClick={() => {
                   setIsFilterOpen(!isFilterOpen);
                 }}
               >
                 <svg
                   fill="none"
-                  height="20"
+                  height="16"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  width="20"
+                  width="16"
                 >
                   <path
                     d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
@@ -203,16 +221,15 @@ function AssetPage() {
                     strokeWidth={2}
                   />
                 </svg>
-                Filter
+                Sort & Filter
               </button>
 
               {/* DROPDOWN MENU */}
               {isFilterOpen && (
-                <div className="ring-opacity-5 absolute top-full right-0 z-50 mt-2 w-56 rounded-md bg-white py-2 shadow-xl ring-1 ring-black">
-                  <div className="px-4 py-2 text-xs font-bold tracking-wider text-gray-500 uppercase">
-                    Sort By
+                <div className="absolute top-full right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-xl">
+                  <div className="px-4 py-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                    Sort By Column
                   </div>
-
                   <SortMenuItem
                     columnId="assetTagDate"
                     label="Tag Date"
@@ -239,105 +256,122 @@ function AssetPage() {
           </div>
         </div>
 
-        {/* Table UI Wrapper */}
+        {/* MAIN DATA CARD */}
         <div
-          className={`w-full overflow-x-auto rounded-t-lg shadow-lg transition-all ${isEditMode ? "ring-4 ring-yellow-400" : ""}`}
+          className={`overflow-hidden rounded-xl border bg-white shadow-sm transition-all ${isEditMode ? "border-yellow-400 ring-4 ring-yellow-400/20" : "border-gray-200"}`}
         >
-          <table className="w-full min-w-200 table-auto text-left text-sm md:min-w-full">
-            <thead className="h-16 bg-[#567bfb] text-base font-bold text-black">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      className="px-6 py-4 align-middle whitespace-nowrap"
-                      key={header.id}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="text-base text-white">
-              {table.getRowModel().rows.map((row, index) => (
-                <tr
-                  className={`${index % 2 === 0 ? "bg-[#1e3a8a]" : "bg-[#567bfb]"} border-b border-blue-400/20 ${
-                    isEditMode
-                      ? "cursor-pointer transition-colors hover:bg-yellow-500 hover:text-black"
-                      : ""
-                  }`}
-                  key={row.id}
-                  onClick={() => {
-                    handleRowClick(row.original.assetId);
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      className="px-6 py-6 align-middle whitespace-nowrap"
-                      key={cell.id}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+          {/* Table Container */}
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[800px] table-auto text-left text-sm">
+              <thead className="border-b border-gray-200 bg-gray-50">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        className="px-6 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
+                        key={header.id}
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {table.getRowModel().rows.map((row) => (
+                  <tr
+                    className={`transition-colors ${
+                      isEditMode
+                        ? "cursor-pointer hover:bg-yellow-50"
+                        : "hover:bg-gray-50"
+                    }`}
+                    key={row.id}
+                    onClick={() => {
+                      handleRowClick(row.original.assetId);
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        className="px-6 py-4 align-middle whitespace-nowrap text-gray-700"
+                        key={cell.id}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
 
-        {/* ========================================================= */}
-        {/* 3. PAGINATION CONTROLS */}
-        {/* ========================================================= */}
-        <div className="flex items-center justify-between rounded-b-lg border-t border-gray-300 bg-white px-6 py-4 shadow-lg">
-          {/* Dropdown to select rows per page */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-700">Rows per page:</span>
-            <select
-              className="cursor-pointer rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
-              value={table.getState().pagination.pageSize}
-            >
-              {[5, 10, 15, 20].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
+                {/* Empty State Fallback */}
+                {table.getRowModel().rows.length === 0 && (
+                  <tr>
+                    <td
+                      className="px-6 py-12 text-center text-gray-500"
+                      colSpan={columns.length}
+                    >
+                      No assets found. Click "Add Asset" to create one.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
-          {/* Next/Prev Navigation Buttons */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-700">
-              Page <strong>{table.getState().pagination.pageIndex + 1}</strong>{" "}
-              of <strong>{table.getPageCount()}</strong>
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                className="rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!table.getCanPreviousPage()}
-                onClick={() => {
-                  table.previousPage();
+          {/* Pagination Controls */}
+          <div className="flex flex-col items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row">
+            <div className="mb-4 flex items-center gap-2 sm:mb-0">
+              <span className="text-sm text-gray-600">Rows per page:</span>
+              <select
+                className="cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                onChange={(e) => {
+                  table.setPageSize(Number(e.target.value));
                 }}
+                value={table.getState().pagination.pageSize}
               >
-                Previous
-              </button>
-              <button
-                className="rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!table.getCanNextPage()}
-                onClick={() => {
-                  table.nextPage();
-                }}
-              >
-                Next
-              </button>
+                {[5, 10, 15, 20].map((pageSize) => (
+                  <option key={pageSize} value={pageSize}>
+                    {pageSize}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                Page{" "}
+                <span className="font-semibold text-gray-900">
+                  {table.getState().pagination.pageIndex + 1}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-900">
+                  {table.getPageCount() || 1}
+                </span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!table.getCanPreviousPage()}
+                  onClick={() => {
+                    table.previousPage();
+                  }}
+                >
+                  Previous
+                </button>
+                <button
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!table.getCanNextPage()}
+                  onClick={() => {
+                    table.nextPage();
+                  }}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -360,11 +394,11 @@ function SortMenuItem({
 
   return (
     <button
-      className="flex w-full items-center justify-between px-4 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50"
+      className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
       onClick={() => column?.toggleSorting()}
     >
       <span>{label}</span>
-      <span className="w-4 text-center font-bold text-blue-600">
+      <span className="w-4 text-center font-bold">
         {isSorted === "asc" ? "↑" : isSorted === "desc" ? "↓" : ""}
       </span>
     </button>
