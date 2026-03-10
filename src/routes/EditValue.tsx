@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "./components/-SideBar";
 import { useAssetContext } from "./context/-AssetContext";
 
-// 1. Define expected search params for TanStack Router
 export const Route = createFileRoute("/EditValue")({
   component: EditValuePage,
   validateSearch: (search: Record<string, unknown>) => {
@@ -17,12 +16,29 @@ export const Route = createFileRoute("/EditValue")({
   },
 });
 
+// Helper function to convert MM/DD/YYYY to YYYY-MM-DD for the HTML date picker
+const formatForDatePicker = (dateStr: string) => {
+  if (!dateStr?.includes("/")) return dateStr;
+  const [month, day, year] = dateStr.split("/");
+  // Ensure month and day are 2 digits
+  const paddedMonth = month.padStart(2, "0");
+  const paddedDay = day.padStart(2, "0");
+  return `${year}-${paddedMonth}-${paddedDay}`;
+};
+
+// Helper function to convert YYYY-MM-DD back to MM/DD/YYYY for saving
+const formatToUSDate = (dateStr: string) => {
+  if (!dateStr?.includes("-")) return dateStr;
+  const [year, month, day] = dateStr.split("-");
+  // Remove padding if preferred, or keep it (e.g. 01/05/2026 vs 1/5/2026)
+  return `${parseInt(month)}/${parseInt(day)}/${year}`;
+};
+
 function EditValuePage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/EditValue" });
   const { assets, updateAsset } = useAssetContext();
 
-  // Local state for the form inputs
   const [formData, setFormData] = useState({
     assetTagDate: "",
     purchaseDate: "",
@@ -32,13 +48,13 @@ function EditValuePage() {
     warrantyUnit: "",
   });
 
-  // Load the specific asset data when the page opens
   useEffect(() => {
     const selectedAsset = assets.find((a) => a.assetId === search.assetId);
     if (selectedAsset) {
       setFormData({
-        assetTagDate: selectedAsset.assetTagDate,
-        purchaseDate: selectedAsset.purchaseDate,
+        // Format dates correctly so the calendar UI actually shows the value
+        assetTagDate: formatForDatePicker(selectedAsset.assetTagDate),
+        purchaseDate: formatForDatePicker(selectedAsset.purchaseDate),
         purchasePrice: selectedAsset.purchasePrice,
         serialNumber: selectedAsset.serialNumber,
         warrantyDuration: selectedAsset.warrantyDuration,
@@ -55,7 +71,15 @@ function EditValuePage() {
   };
 
   const handleSave = () => {
-    updateAsset(search.assetId, formData);
+    // Format dates back to the standard MM/DD/YYYY before saving
+    const formattedData = {
+      ...formData,
+      assetTagDate: formatToUSDate(formData.assetTagDate),
+      purchaseDate: formatToUSDate(formData.purchaseDate),
+      warrantyDuration: Number(formData.warrantyDuration),
+    };
+
+    updateAsset(search.assetId, formattedData);
     alert("Asset updated successfully!");
     navigate({ to: "/table/Asset" });
   };
@@ -120,7 +144,6 @@ function EditValuePage() {
           </div>
         </div>
 
-        {/* CONTAINER WRAPPER: Limits both table and button to 1400px */}
         <div className="w-full max-w-[1400px]">
           {/* Modern Table Container */}
           <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -163,24 +186,24 @@ function EditValuePage() {
                       </div>
                     </td>
 
-                    {/* Tag Date */}
+                    {/* Tag Date (CHANGED TO type="date") */}
                     <td className="px-4 py-4 align-middle">
                       <input
-                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                         name="assetTagDate"
                         onChange={handleChange}
-                        placeholder="MM/DD/YYYY"
+                        type="date"
                         value={formData.assetTagDate}
                       />
                     </td>
 
-                    {/* Purchase Date */}
+                    {/* Purchase Date (CHANGED TO type="date") */}
                     <td className="px-4 py-4 align-middle">
                       <input
-                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                         name="purchaseDate"
                         onChange={handleChange}
-                        placeholder="MM/DD/YYYY"
+                        type="date"
                         value={formData.purchaseDate}
                       />
                     </td>

@@ -85,9 +85,19 @@ function AddAssetPage() {
     }
 
     rows.forEach((row) => {
+      // If the user used the date picker, the format will be YYYY-MM-DD.
+      // We optionally convert it back to MM/DD/YYYY to match your other screens
+      const formatToUSDate = (dateStr: string) => {
+        if (!dateStr?.includes("-")) return dateStr;
+        const [year, month, day] = dateStr.split("-");
+        return `${month}/${day}/${year}`;
+      };
+
       const newAsset = {
         ...row,
         assetId: `0${Math.floor(Math.random() * 10000)}`,
+        assetTagDate: formatToUSDate(String(row.assetTagDate)),
+        purchaseDate: formatToUSDate(String(row.purchaseDate)),
         warrantyDuration: Number(row.warrantyDuration) || 0,
       } as any;
 
@@ -193,7 +203,23 @@ function AddAssetPage() {
                         );
                       }
 
-                      // 3. STANDARD TEXT/NUMBER INPUTS
+                      // 3. DATE FIELDS (Tag Date, Purchase Date)
+                      if (col.label.includes("Date")) {
+                        return (
+                          <td className="px-4 py-3 align-middle" key={col.key}>
+                            <input
+                              className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                              onChange={(e) => {
+                                handleChange(index, col.key, e.target.value);
+                              }}
+                              type="date"
+                              value={row[col.key]}
+                            />
+                          </td>
+                        );
+                      }
+
+                      // 4. STANDARD TEXT/NUMBER INPUTS
                       return (
                         <td className="px-4 py-3 align-middle" key={col.key}>
                           <input
