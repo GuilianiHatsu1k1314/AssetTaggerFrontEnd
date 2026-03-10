@@ -1,5 +1,6 @@
 import {
   createFileRoute,
+  Link,
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
@@ -64,10 +65,29 @@ function EditValuePage() {
       <Sidebar />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
-        {/* Header */}
-        <div className="mb-6 flex items-center gap-4 md:mb-8">
+        {/* Breadcrumbs */}
+        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
+          <Link
+            className="hover:text-blue-600 hover:underline"
+            to="/TableSelection"
+          >
+            Table Selection
+          </Link>
+          <span>/</span>
+          <Link
+            className="hover:text-blue-600 hover:underline"
+            to="/table/Asset"
+          >
+            Table Display
+          </Link>
+          <span>/</span>
+          <span className="text-gray-900">Edit Value</span>
+        </div>
+
+        {/* Header Section */}
+        <div className="mb-8 flex items-center gap-4">
           <button
-            className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200"
+            className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             onClick={() => {
               window.history.back();
             }}
@@ -76,7 +96,7 @@ function EditValuePage() {
               className="md:h-8 md:w-8"
               fill="none"
               height="28"
-              stroke="black"
+              stroke="currentColor"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2.5"
@@ -87,119 +107,159 @@ function EditValuePage() {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </button>
-          <h1 className="text-xl font-medium text-black md:text-3xl">
-            Edit Value
-          </h1>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-black">Asset</h2>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+              Edit Asset
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 md:text-base">
+              Update the details for Asset ID:{" "}
+              <span className="font-semibold text-blue-600">
+                {search.assetId}
+              </span>
+            </p>
+          </div>
         </div>
 
         {/* CONTAINER WRAPPER: Limits both table and button to 1400px */}
         <div className="w-full max-w-[1400px]">
-          {/* Table Container */}
-          <div className="w-full overflow-x-auto rounded-lg shadow-sm">
-            <div className="min-w-[1200px]">
-              {/* Header Row */}
-              <div className="grid grid-cols-7 gap-2 bg-[#567bfb] px-2 py-6 text-center">
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  AssetID
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Tag Date
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Purchase Date
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Purchase Price
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Serial Number
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Warranty Unit Of Measure
-                </div>
-                <div className="flex items-center justify-center text-sm font-bold text-black">
-                  Asset Warranty Duration
-                </div>
-              </div>
+          {/* Modern Table Container */}
+          <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1000px] table-auto text-left text-sm">
+                {/* Table Header */}
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Asset ID
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Tag Date
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Purchase Date
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Purchase Price
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Serial Number
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Warranty Unit
+                    </th>
+                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Warranty Duration
+                    </th>
+                  </tr>
+                </thead>
 
-              {/* Input Row */}
-              <div className="grid grid-cols-7 items-center gap-2 bg-[#1e3a8a] px-2 py-4">
-                <div className="text-center text-xl font-medium text-white">
-                  {search.assetId}
-                </div>
+                {/* Table Body */}
+                <tbody className="bg-white">
+                  <tr className="hover:bg-gray-50">
+                    {/* Read-Only Asset ID */}
+                    <td className="px-4 py-4 align-middle">
+                      <div className="flex w-full min-w-[100px] items-center justify-center rounded-md bg-gray-100 px-3 py-2 text-sm font-bold text-gray-700">
+                        {search.assetId}
+                      </div>
+                    </td>
 
-                <div className="flex justify-center">
-                  <input
-                    className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="assetTagDate"
-                    onChange={handleChange}
-                    value={formData.assetTagDate}
-                  />
-                </div>
+                    {/* Tag Date */}
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="assetTagDate"
+                        onChange={handleChange}
+                        placeholder="MM/DD/YYYY"
+                        value={formData.assetTagDate}
+                      />
+                    </td>
 
-                <div className="flex justify-center">
-                  <input
-                    className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="purchaseDate"
-                    onChange={handleChange}
-                    value={formData.purchaseDate}
-                  />
-                </div>
+                    {/* Purchase Date */}
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="purchaseDate"
+                        onChange={handleChange}
+                        placeholder="MM/DD/YYYY"
+                        value={formData.purchaseDate}
+                      />
+                    </td>
 
-                <div className="flex justify-center">
-                  <input
-                    className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="purchasePrice"
-                    onChange={handleChange}
-                    value={formData.purchasePrice}
-                  />
-                </div>
+                    {/* Purchase Price */}
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="purchasePrice"
+                        onChange={handleChange}
+                        placeholder="e.g. 20000"
+                        value={formData.purchasePrice}
+                      />
+                    </td>
 
-                <div className="flex justify-center">
-                  <input
-                    className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="serialNumber"
-                    onChange={handleChange}
-                    value={formData.serialNumber}
-                  />
-                </div>
+                    {/* Serial Number */}
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="serialNumber"
+                        onChange={handleChange}
+                        placeholder="e.g. SN-9F3K"
+                        value={formData.serialNumber}
+                      />
+                    </td>
 
-                <div className="flex justify-center">
-                  <select
-                    className="w-full max-w-[140px] cursor-pointer appearance-none rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="warrantyUnit"
-                    onChange={handleChange}
-                    value={formData.warrantyUnit}
-                  >
-                    <option value="">--Select--</option>
-                    <option value="mm">mm (Month)</option>
-                    <option value="yy">yy (Year)</option>
-                  </select>
-                </div>
+                    {/* Warranty Unit Dropdown */}
+                    <td className="px-4 py-4 align-middle">
+                      <select
+                        className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="warrantyUnit"
+                        onChange={handleChange}
+                        value={formData.warrantyUnit}
+                      >
+                        <option disabled value="">
+                          -- Select --
+                        </option>
+                        <option value="mm">mm (Month)</option>
+                        <option value="yy">yy (Year)</option>
+                      </select>
+                    </td>
 
-                <div className="flex justify-center">
-                  <input
-                    className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] p-2 text-center text-gray-800 outline-none focus:ring-2 focus:ring-blue-400"
-                    name="warrantyDuration"
-                    onChange={handleChange}
-                    type="number"
-                    value={formData.warrantyDuration}
-                  />
-                </div>
-              </div>
+                    {/* Warranty Duration */}
+                    <td className="px-4 py-4 align-middle">
+                      <input
+                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        name="warrantyDuration"
+                        onChange={handleChange}
+                        placeholder="e.g. 12"
+                        type="number"
+                        value={formData.warrantyDuration}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Save Button - Now inside the 1400px wrapper, so it aligns with the table edge */}
+          {/* Save Button */}
           <div className="mt-8 flex justify-end">
             <button
-              className="rounded-full bg-blue-600 px-10 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               onClick={handleSave}
             >
+              <svg
+                fill="none"
+                height="20"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                width="20"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
               Save Changes
             </button>
           </div>
