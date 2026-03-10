@@ -9,23 +9,30 @@ export const Route = createFileRoute("/AddValue")({
 });
 
 // 1. DYNAMIC SCHEMA CONFIGURATION
-// I added an 'options' array to the warrantyUnit column.
 const tableColumns = [
-  { isReadOnly: true, key: "assetId", label: "Asset ID" },
-  { key: "assetTagDate", label: "Asset Tag Date" },
-  { key: "purchaseDate", label: "Asset Purchase Date" },
-  { key: "purchasePrice", label: "Asset Purchase Price" },
-  { key: "serialNumber", label: "Asset Serial Number" },
+  {
+    isReadOnly: true,
+    key: "assetId",
+    label: "Asset ID",
+    placeholder: "(Auto)",
+  },
+  { key: "assetTagDate", label: "Tag Date", placeholder: "MM/DD/YYYY" },
+  { key: "purchaseDate", label: "Purchase Date", placeholder: "MM/DD/YYYY" },
+  { key: "purchasePrice", label: "Purchase Price", placeholder: "e.g. 20000" },
+  { key: "serialNumber", label: "Serial Number", placeholder: "e.g. SN-9F3K" },
   {
     key: "warrantyUnit",
-    label: "Asset Warranty Unit Of Measure",
-    // This tells our code to render a dropdown instead of a text box
+    label: "Warranty Unit",
     options: [
       { label: "mm (Month)", value: "mm" },
       { label: "yy (Year)", value: "yy" },
     ],
   },
-  { key: "warrantyDuration", label: "Asset Warranty Duration" },
+  {
+    key: "warrantyDuration",
+    label: "Warranty Duration",
+    placeholder: "e.g. 12",
+  },
 ];
 
 function AddAssetPage() {
@@ -73,7 +80,7 @@ function AddAssetPage() {
     }
 
     if (!isValid) {
-      alert("Please fill out all fields in all rows before saving.");
+      alert("Please fill out all required fields in all rows before saving.");
       return;
     }
 
@@ -92,134 +99,169 @@ function AddAssetPage() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col bg-white md:flex-row">
+    <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
         {/* Breadcrumbs */}
-        <div className="mb-8 text-lg font-medium text-black">
-          <Link className="hover:underline" to="/TableSelection">
+        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
+          <Link
+            className="hover:text-blue-600 hover:underline"
+            to="/TableSelection"
+          >
             Table Selection
           </Link>
-          <span className="mx-2">&gt;</span>
-          <Link className="hover:underline" to="/table/Asset">
+          <span>/</span>
+          <Link
+            className="hover:text-blue-600 hover:underline"
+            to="/table/Asset"
+          >
             Table Display
           </Link>
-          <span className="mx-2">&gt;</span>
-          <span>Add New Value</span>
+          <span>/</span>
+          <span className="text-gray-900">Add New Value</span>
         </div>
 
         {/* Page Title */}
-        <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-black">Add New Value</h1>
-          <h2 className="text-xl font-semibold text-black">Asset</h2>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Add New Assets
+          </h1>
+          <p className="mt-2 text-gray-500">
+            Fill out the rows below to register new assets into the system.
+          </p>
         </div>
 
-        {/* Dynamic Input Table Wrapper */}
-        <div className="w-full max-w-[1400px] overflow-x-auto rounded-lg shadow-sm">
-          <div className="min-w-[1200px] md:min-w-full">
-            {/* Header Row */}
-            <div
-              className="grid gap-2 bg-[#567bfb] px-2 py-6 text-center"
-              style={{
-                gridTemplateColumns: `repeat(${tableColumns.length}, minmax(0, 1fr))`,
-              }}
-            >
-              {tableColumns.map((col) => (
-                <div
-                  className="flex items-center justify-center px-1 text-center text-sm font-bold break-words text-black"
-                  key={col.key}
-                >
-                  {col.label}
-                </div>
-              ))}
-            </div>
+        {/* Dynamic Input Table Card */}
+        <div className="w-full max-w-[1400px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] table-auto text-left text-sm">
+              {/* Table Header */}
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr>
+                  {tableColumns.map((col) => (
+                    <th
+                      className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
+                      key={col.key}
+                    >
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
 
-            {/* Input Rows */}
-            <div className="space-y-4 bg-[#1e3a8a] px-2 py-4">
-              {rows.map((row, index) => (
-                <div className="grid items-center gap-2" key={index}>
-                  <div
-                    className="grid items-center gap-2"
-                    style={{
-                      gridTemplateColumns: `repeat(${tableColumns.length}, minmax(0, 1fr))`,
-                    }}
+              {/* Table Body (Input Rows) */}
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {rows.map((row, index) => (
+                  <tr
+                    className="transition-colors hover:bg-gray-50"
+                    key={index}
                   >
                     {tableColumns.map((col) => {
                       // 1. READ ONLY FIELDS (Asset ID)
                       if (col.isReadOnly) {
                         return (
-                          <div
-                            className="text-center text-sm font-medium text-white/50"
-                            key={col.key}
-                          >
-                            (Auto)
-                          </div>
+                          <td className="px-4 py-3 align-middle" key={col.key}>
+                            <div className="flex w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400">
+                              {col.placeholder || "(Auto)"}
+                            </div>
+                          </td>
                         );
                       }
 
                       // 2. DROPDOWN FIELDS (Warranty Unit)
-                      // If the column has an 'options' array, render a <select>
                       if (col.options) {
                         return (
-                          <div className="flex justify-center" key={col.key}>
+                          <td className="px-4 py-3 align-middle" key={col.key}>
                             <select
-                              className="w-full max-w-[140px] cursor-pointer appearance-none rounded-sm bg-[#dcdcdc] px-2 py-2 text-center font-medium text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                              className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                               onChange={(e) => {
                                 handleChange(index, col.key, e.target.value);
                               }}
                               value={row[col.key]}
                             >
-                              <option value="">--Select--</option>
+                              <option disabled value="">
+                                -- Select --
+                              </option>
                               {col.options.map((opt) => (
                                 <option key={opt.value} value={opt.value}>
                                   {opt.label}
                                 </option>
                               ))}
                             </select>
-                          </div>
+                          </td>
                         );
                       }
 
                       // 3. STANDARD TEXT/NUMBER INPUTS
                       return (
-                        <div className="flex justify-center" key={col.key}>
+                        <td className="px-4 py-3 align-middle" key={col.key}>
                           <input
-                            className="w-full max-w-[140px] rounded-sm bg-[#dcdcdc] px-2 py-2 text-center font-medium text-gray-700 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                            className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                             onChange={(e) => {
                               handleChange(index, col.key, e.target.value);
                             }}
-                            placeholder="--Enter--"
+                            placeholder={col.placeholder || "Enter value..."}
                             type={
                               col.key === "warrantyDuration" ? "number" : "text"
                             }
                             value={row[col.key]}
                           />
-                        </div>
+                        </td>
                       );
                     })}
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Add Row Button (Attached to bottom of table) */}
+          <div className="border-t border-gray-200 bg-gray-50 p-4">
+            <button
+              className="group flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none"
+              onClick={handleAddRow}
+            >
+              <svg
+                className="transition-transform group-hover:scale-110"
+                fill="none"
+                height="20"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                width="20"
+              >
+                <line x1="12" x2="12" y1="5" y2="19"></line>
+                <line x1="5" x2="19" y1="12" y2="12"></line>
+              </svg>
+              Add Another Row
+            </button>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="mt-6 flex w-full max-w-[1400px] items-center justify-between">
+        {/* Final Action / Submit */}
+        <div className="mt-8 flex w-full max-w-[1400px] justify-end">
           <button
-            className="flex items-center gap-2 text-xl font-bold text-black transition-colors hover:text-blue-700"
-            onClick={handleAddRow}
-          >
-            <span className="text-3xl leading-none font-light">+</span>
-            Create a new row
-          </button>
-
-          <button
-            className="rounded-full bg-blue-600 px-8 py-2 font-bold text-white shadow-md transition-all hover:bg-blue-700"
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
             onClick={handleSubmit}
           >
-            Add Value
+            <svg
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              width="20"
+            >
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Save Assets
           </button>
         </div>
       </main>
