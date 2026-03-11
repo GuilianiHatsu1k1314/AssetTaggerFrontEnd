@@ -132,14 +132,37 @@ function AddAssetPage() {
           <span className="text-gray-900">Add New Value</span>
         </div>
 
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Add New Assets
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Fill out the rows below to register new assets into the system.
-          </p>
+        {/* Header Section with Back Button */}
+        <div className="mb-8 flex items-center gap-4">
+          <button
+            className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            onClick={() => {
+              window.history.back();
+            }}
+          >
+            <svg
+              className="md:h-8 md:w-8"
+              fill="none"
+              height="28"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+              width="28"
+            >
+              <line x1="19" x2="5" y1="12" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+              Add New Assets
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 md:text-base">
+              Fill out the rows below to register new assets into the system.
+            </p>
+          </div>
         </div>
 
         {/* Dynamic Input Table Card */}
