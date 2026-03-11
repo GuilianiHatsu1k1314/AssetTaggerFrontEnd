@@ -144,7 +144,7 @@ function ScanQRPage() {
             <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-4 border-gray-100 bg-gray-900 shadow-inner">
               <Scanner
                 components={{
-                  audio: true,
+                  audio: false,
                   finder: true,
                   onOff: false,
                   torch: true,
