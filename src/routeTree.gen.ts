@@ -20,6 +20,9 @@ import { Route as TableRouteRouteImport } from './routes/table/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TableIndexRouteImport } from './routes/table/index'
 import { Route as TableQRPageRouteImport } from './routes/table/QRPage'
+import { Route as TableAssetTransferRouteImport } from './routes/table/AssetTransfer'
+import { Route as TableAssetIssueRouteImport } from './routes/table/AssetIssue'
+import { Route as TableAssetFixRouteImport } from './routes/table/AssetFix'
 import { Route as TableAssetRouteImport } from './routes/table/Asset'
 import { Route as AdminpagesRegisterUserRouteImport } from './routes/adminpages/RegisterUser'
 import { Route as AdminpagesManageUserRouteImport } from './routes/adminpages/ManageUser'
@@ -81,6 +84,21 @@ const TableQRPageRoute = TableQRPageRouteImport.update({
   path: '/QRPage',
   getParentRoute: () => TableRouteRoute,
 } as any)
+const TableAssetTransferRoute = TableAssetTransferRouteImport.update({
+  id: '/AssetTransfer',
+  path: '/AssetTransfer',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableAssetIssueRoute = TableAssetIssueRouteImport.update({
+  id: '/AssetIssue',
+  path: '/AssetIssue',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableAssetFixRoute = TableAssetFixRouteImport.update({
+  id: '/AssetFix',
+  path: '/AssetFix',
+  getParentRoute: () => TableRouteRoute,
+} as any)
 const TableAssetRoute = TableAssetRouteImport.update({
   id: '/Asset',
   path: '/Asset',
@@ -122,6 +140,9 @@ export interface FileRoutesByFullPath {
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
+  '/table/AssetFix': typeof TableAssetFixRoute
+  '/table/AssetIssue': typeof TableAssetIssueRoute
+  '/table/AssetTransfer': typeof TableAssetTransferRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
 }
@@ -139,6 +160,9 @@ export interface FileRoutesByTo {
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
+  '/table/AssetFix': typeof TableAssetFixRoute
+  '/table/AssetIssue': typeof TableAssetIssueRoute
+  '/table/AssetTransfer': typeof TableAssetTransferRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table': typeof TableIndexRoute
 }
@@ -158,6 +182,9 @@ export interface FileRoutesById {
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
+  '/table/AssetFix': typeof TableAssetFixRoute
+  '/table/AssetIssue': typeof TableAssetIssueRoute
+  '/table/AssetTransfer': typeof TableAssetTransferRoute
   '/table/QRPage': typeof TableQRPageRoute
   '/table/': typeof TableIndexRoute
 }
@@ -178,6 +205,9 @@ export interface FileRouteTypes {
     | '/adminpages/ManageUser'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
+    | '/table/AssetFix'
+    | '/table/AssetIssue'
+    | '/table/AssetTransfer'
     | '/table/QRPage'
     | '/table/'
   fileRoutesByTo: FileRoutesByTo
@@ -195,6 +225,9 @@ export interface FileRouteTypes {
     | '/adminpages/ManageUser'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
+    | '/table/AssetFix'
+    | '/table/AssetIssue'
+    | '/table/AssetTransfer'
     | '/table/QRPage'
     | '/table'
   id:
@@ -213,6 +246,9 @@ export interface FileRouteTypes {
     | '/adminpages/ManageUser'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
+    | '/table/AssetFix'
+    | '/table/AssetIssue'
+    | '/table/AssetTransfer'
     | '/table/QRPage'
     | '/table/'
   fileRoutesById: FileRoutesById
@@ -312,6 +348,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableQRPageRouteImport
       parentRoute: typeof TableRouteRoute
     }
+    '/table/AssetTransfer': {
+      id: '/table/AssetTransfer'
+      path: '/AssetTransfer'
+      fullPath: '/table/AssetTransfer'
+      preLoaderRoute: typeof TableAssetTransferRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/AssetIssue': {
+      id: '/table/AssetIssue'
+      path: '/AssetIssue'
+      fullPath: '/table/AssetIssue'
+      preLoaderRoute: typeof TableAssetIssueRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/AssetFix': {
+      id: '/table/AssetFix'
+      path: '/AssetFix'
+      fullPath: '/table/AssetFix'
+      preLoaderRoute: typeof TableAssetFixRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
     '/table/Asset': {
       id: '/table/Asset'
       path: '/Asset'
@@ -352,12 +409,18 @@ declare module '@tanstack/react-router' {
 
 interface TableRouteRouteChildren {
   TableAssetRoute: typeof TableAssetRoute
+  TableAssetFixRoute: typeof TableAssetFixRoute
+  TableAssetIssueRoute: typeof TableAssetIssueRoute
+  TableAssetTransferRoute: typeof TableAssetTransferRoute
   TableQRPageRoute: typeof TableQRPageRoute
   TableIndexRoute: typeof TableIndexRoute
 }
 
 const TableRouteRouteChildren: TableRouteRouteChildren = {
   TableAssetRoute: TableAssetRoute,
+  TableAssetFixRoute: TableAssetFixRoute,
+  TableAssetIssueRoute: TableAssetIssueRoute,
+  TableAssetTransferRoute: TableAssetTransferRoute,
   TableQRPageRoute: TableQRPageRoute,
   TableIndexRoute: TableIndexRoute,
 }
