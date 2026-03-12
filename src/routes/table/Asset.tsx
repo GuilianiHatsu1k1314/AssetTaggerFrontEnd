@@ -17,19 +17,27 @@ export const Route = createFileRoute("/table/Asset")({
   component: AssetPage,
 });
 
-// Data Types
-interface Asset {
-  assetId: string;
-  assetTagDate: string;
-  purchaseDate: string;
-  purchasePrice: string;
-  serialNumber: string;
-  warrantyDuration: number;
-  warrantyUnit: string;
+// 1. UPDATED DATA TYPE TO MATCH SQL SCHEMA
+export interface Asset {
+  assetId: string; // Maps to UNIQUEIDENTIFIER
+  assetTagDate: string; // DATETIME
+  employeeId?: string;
+  locationId?: string;
+  // Foreign Keys (Placeholders for future implementation)
+  productId?: string;
+  purchaseDate: null | string; // DATETIME NULL
+  purchasePrice: null | number | string; // MONEY NULL
+  salvageValue: null | number | string; // MONEY NULL
+  serialNumber: null | string; // NVARCHAR(4000) NULL
+  usefulLife: null | number; // INT NULL
+  vendorId?: string;
+  warrantyDuration: null | number; // INT NULL
+  warrantyUnit: null | string; // NCHAR(2) NULL ('yy', 'mm', 'ww', 'dd')
 }
 
 const columnHelper = createColumnHelper<Asset>();
 
+// 2. UPDATED COLUMNS TO REFLECT ALL SQL FIELDS
 const columns = [
   columnHelper.accessor("assetId", {
     cell: (info) => (
@@ -49,27 +57,54 @@ const columns = [
     sortingFn: "datetime",
   }),
   columnHelper.accessor("purchaseDate", {
+    cell: (info) => info.getValue() || "-",
     header: "Purchase Date",
     sortingFn: "datetime",
   }),
   columnHelper.accessor("purchasePrice", {
+    cell: (info) => {
+      const val = info.getValue();
+      return val ? `₱${val}` : "-"; // Assuming Philippine Peso based on earlier context
+    },
     header: "Purchase Price",
     sortingFn: (rowA, rowB, columnId) => {
-      const a = Number(
-        rowA.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
-      );
-      const b = Number(
-        rowB.getValue<string>(columnId).replace(/[^0-9.-]+/g, ""),
-      );
+      const valA = rowA.getValue<string>(columnId) || "0";
+      const valB = rowB.getValue<string>(columnId) || "0";
+      const a = Number(String(valA).replace(/[^0-9.-]+/g, ""));
+      const b = Number(String(valB).replace(/[^0-9.-]+/g, ""));
       return a < b ? -1 : a > b ? 1 : 0;
     },
   }),
-  columnHelper.accessor("serialNumber", { header: "Serial Number" }),
+  columnHelper.accessor("serialNumber", {
+    cell: (info) => info.getValue() || "-",
+    header: "Serial Number",
+  }),
   columnHelper.accessor("warrantyUnit", {
+    cell: (info) => {
+      const val = info.getValue();
+      if (val === "yy") return "Years";
+      if (val === "mm") return "Months";
+      if (val === "ww") return "Weeks";
+      if (val === "dd") return "Days";
+      return "-";
+    },
     header: "Warranty Unit",
   }),
   columnHelper.accessor("warrantyDuration", {
+    cell: (info) => info.getValue() || "-",
     header: "Warranty Duration",
+  }),
+  // Added new columns from SQL Schema
+  columnHelper.accessor("usefulLife", {
+    cell: (info) => info.getValue() || "-",
+    header: "Useful Life (Yrs)",
+  }),
+  columnHelper.accessor("salvageValue", {
+    cell: (info) => {
+      const val = info.getValue();
+      return val ? `₱${val}` : "-";
+    },
+    header: "Salvage Value",
   }),
 ];
 
@@ -262,7 +297,7 @@ function AssetPage() {
         >
           {/* Table Container */}
           <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[800px] table-auto text-left text-sm">
+            <table className="w-full min-w-[1200px] table-auto text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
