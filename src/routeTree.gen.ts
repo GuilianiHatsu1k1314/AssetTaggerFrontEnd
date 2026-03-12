@@ -19,7 +19,20 @@ import { Route as AddValueRouteImport } from './routes/AddValue'
 import { Route as TableRouteRouteImport } from './routes/table/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TableIndexRouteImport } from './routes/table/index'
+import { Route as TableVendorRouteImport } from './routes/table/Vendor'
+import { Route as TableRoleRouteImport } from './routes/table/Role'
 import { Route as TableQRPageRouteImport } from './routes/table/QRPage'
+import { Route as TableProductSetRouteImport } from './routes/table/ProductSet'
+import { Route as TableProductRouteImport } from './routes/table/Product'
+import { Route as TableManufacturerRouteImport } from './routes/table/Manufacturer'
+import { Route as TableLocationRouteImport } from './routes/table/Location'
+import { Route as TableEndUserRoleRouteImport } from './routes/table/EndUserRole'
+import { Route as TableEndUserRouteImport } from './routes/table/EndUser'
+import { Route as TableEmployeeRouteImport } from './routes/table/Employee'
+import { Route as TableDepartmentRouteImport } from './routes/table/Department'
+import { Route as TableCompanyRouteImport } from './routes/table/Company'
+import { Route as TableCategoryRouteImport } from './routes/table/Category'
+import { Route as TableBuildingRouteImport } from './routes/table/Building'
 import { Route as TableAssetTransferRouteImport } from './routes/table/AssetTransfer'
 import { Route as TableAssetIssueRouteImport } from './routes/table/AssetIssue'
 import { Route as TableAssetFixRouteImport } from './routes/table/AssetFix'
@@ -79,9 +92,74 @@ const TableIndexRoute = TableIndexRouteImport.update({
   path: '/',
   getParentRoute: () => TableRouteRoute,
 } as any)
+const TableVendorRoute = TableVendorRouteImport.update({
+  id: '/Vendor',
+  path: '/Vendor',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableRoleRoute = TableRoleRouteImport.update({
+  id: '/Role',
+  path: '/Role',
+  getParentRoute: () => TableRouteRoute,
+} as any)
 const TableQRPageRoute = TableQRPageRouteImport.update({
   id: '/QRPage',
   path: '/QRPage',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableProductSetRoute = TableProductSetRouteImport.update({
+  id: '/ProductSet',
+  path: '/ProductSet',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableProductRoute = TableProductRouteImport.update({
+  id: '/Product',
+  path: '/Product',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableManufacturerRoute = TableManufacturerRouteImport.update({
+  id: '/Manufacturer',
+  path: '/Manufacturer',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableLocationRoute = TableLocationRouteImport.update({
+  id: '/Location',
+  path: '/Location',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableEndUserRoleRoute = TableEndUserRoleRouteImport.update({
+  id: '/EndUserRole',
+  path: '/EndUserRole',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableEndUserRoute = TableEndUserRouteImport.update({
+  id: '/EndUser',
+  path: '/EndUser',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableEmployeeRoute = TableEmployeeRouteImport.update({
+  id: '/Employee',
+  path: '/Employee',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableDepartmentRoute = TableDepartmentRouteImport.update({
+  id: '/Department',
+  path: '/Department',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableCompanyRoute = TableCompanyRouteImport.update({
+  id: '/Company',
+  path: '/Company',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableCategoryRoute = TableCategoryRouteImport.update({
+  id: '/Category',
+  path: '/Category',
+  getParentRoute: () => TableRouteRoute,
+} as any)
+const TableBuildingRoute = TableBuildingRouteImport.update({
+  id: '/Building',
+  path: '/Building',
   getParentRoute: () => TableRouteRoute,
 } as any)
 const TableAssetTransferRoute = TableAssetTransferRouteImport.update({
@@ -143,7 +221,20 @@ export interface FileRoutesByFullPath {
   '/table/AssetFix': typeof TableAssetFixRoute
   '/table/AssetIssue': typeof TableAssetIssueRoute
   '/table/AssetTransfer': typeof TableAssetTransferRoute
+  '/table/Building': typeof TableBuildingRoute
+  '/table/Category': typeof TableCategoryRoute
+  '/table/Company': typeof TableCompanyRoute
+  '/table/Department': typeof TableDepartmentRoute
+  '/table/Employee': typeof TableEmployeeRoute
+  '/table/EndUser': typeof TableEndUserRoute
+  '/table/EndUserRole': typeof TableEndUserRoleRoute
+  '/table/Location': typeof TableLocationRoute
+  '/table/Manufacturer': typeof TableManufacturerRoute
+  '/table/Product': typeof TableProductRoute
+  '/table/ProductSet': typeof TableProductSetRoute
   '/table/QRPage': typeof TableQRPageRoute
+  '/table/Role': typeof TableRoleRoute
+  '/table/Vendor': typeof TableVendorRoute
   '/table/': typeof TableIndexRoute
 }
 export interface FileRoutesByTo {
@@ -163,7 +254,20 @@ export interface FileRoutesByTo {
   '/table/AssetFix': typeof TableAssetFixRoute
   '/table/AssetIssue': typeof TableAssetIssueRoute
   '/table/AssetTransfer': typeof TableAssetTransferRoute
+  '/table/Building': typeof TableBuildingRoute
+  '/table/Category': typeof TableCategoryRoute
+  '/table/Company': typeof TableCompanyRoute
+  '/table/Department': typeof TableDepartmentRoute
+  '/table/Employee': typeof TableEmployeeRoute
+  '/table/EndUser': typeof TableEndUserRoute
+  '/table/EndUserRole': typeof TableEndUserRoleRoute
+  '/table/Location': typeof TableLocationRoute
+  '/table/Manufacturer': typeof TableManufacturerRoute
+  '/table/Product': typeof TableProductRoute
+  '/table/ProductSet': typeof TableProductSetRoute
   '/table/QRPage': typeof TableQRPageRoute
+  '/table/Role': typeof TableRoleRoute
+  '/table/Vendor': typeof TableVendorRoute
   '/table': typeof TableIndexRoute
 }
 export interface FileRoutesById {
@@ -185,7 +289,20 @@ export interface FileRoutesById {
   '/table/AssetFix': typeof TableAssetFixRoute
   '/table/AssetIssue': typeof TableAssetIssueRoute
   '/table/AssetTransfer': typeof TableAssetTransferRoute
+  '/table/Building': typeof TableBuildingRoute
+  '/table/Category': typeof TableCategoryRoute
+  '/table/Company': typeof TableCompanyRoute
+  '/table/Department': typeof TableDepartmentRoute
+  '/table/Employee': typeof TableEmployeeRoute
+  '/table/EndUser': typeof TableEndUserRoute
+  '/table/EndUserRole': typeof TableEndUserRoleRoute
+  '/table/Location': typeof TableLocationRoute
+  '/table/Manufacturer': typeof TableManufacturerRoute
+  '/table/Product': typeof TableProductRoute
+  '/table/ProductSet': typeof TableProductSetRoute
   '/table/QRPage': typeof TableQRPageRoute
+  '/table/Role': typeof TableRoleRoute
+  '/table/Vendor': typeof TableVendorRoute
   '/table/': typeof TableIndexRoute
 }
 export interface FileRouteTypes {
@@ -208,7 +325,20 @@ export interface FileRouteTypes {
     | '/table/AssetFix'
     | '/table/AssetIssue'
     | '/table/AssetTransfer'
+    | '/table/Building'
+    | '/table/Category'
+    | '/table/Company'
+    | '/table/Department'
+    | '/table/Employee'
+    | '/table/EndUser'
+    | '/table/EndUserRole'
+    | '/table/Location'
+    | '/table/Manufacturer'
+    | '/table/Product'
+    | '/table/ProductSet'
     | '/table/QRPage'
+    | '/table/Role'
+    | '/table/Vendor'
     | '/table/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -228,7 +358,20 @@ export interface FileRouteTypes {
     | '/table/AssetFix'
     | '/table/AssetIssue'
     | '/table/AssetTransfer'
+    | '/table/Building'
+    | '/table/Category'
+    | '/table/Company'
+    | '/table/Department'
+    | '/table/Employee'
+    | '/table/EndUser'
+    | '/table/EndUserRole'
+    | '/table/Location'
+    | '/table/Manufacturer'
+    | '/table/Product'
+    | '/table/ProductSet'
     | '/table/QRPage'
+    | '/table/Role'
+    | '/table/Vendor'
     | '/table'
   id:
     | '__root__'
@@ -249,7 +392,20 @@ export interface FileRouteTypes {
     | '/table/AssetFix'
     | '/table/AssetIssue'
     | '/table/AssetTransfer'
+    | '/table/Building'
+    | '/table/Category'
+    | '/table/Company'
+    | '/table/Department'
+    | '/table/Employee'
+    | '/table/EndUser'
+    | '/table/EndUserRole'
+    | '/table/Location'
+    | '/table/Manufacturer'
+    | '/table/Product'
+    | '/table/ProductSet'
     | '/table/QRPage'
+    | '/table/Role'
+    | '/table/Vendor'
     | '/table/'
   fileRoutesById: FileRoutesById
 }
@@ -341,11 +497,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TableIndexRouteImport
       parentRoute: typeof TableRouteRoute
     }
+    '/table/Vendor': {
+      id: '/table/Vendor'
+      path: '/Vendor'
+      fullPath: '/table/Vendor'
+      preLoaderRoute: typeof TableVendorRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Role': {
+      id: '/table/Role'
+      path: '/Role'
+      fullPath: '/table/Role'
+      preLoaderRoute: typeof TableRoleRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
     '/table/QRPage': {
       id: '/table/QRPage'
       path: '/QRPage'
       fullPath: '/table/QRPage'
       preLoaderRoute: typeof TableQRPageRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/ProductSet': {
+      id: '/table/ProductSet'
+      path: '/ProductSet'
+      fullPath: '/table/ProductSet'
+      preLoaderRoute: typeof TableProductSetRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Product': {
+      id: '/table/Product'
+      path: '/Product'
+      fullPath: '/table/Product'
+      preLoaderRoute: typeof TableProductRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Manufacturer': {
+      id: '/table/Manufacturer'
+      path: '/Manufacturer'
+      fullPath: '/table/Manufacturer'
+      preLoaderRoute: typeof TableManufacturerRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Location': {
+      id: '/table/Location'
+      path: '/Location'
+      fullPath: '/table/Location'
+      preLoaderRoute: typeof TableLocationRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/EndUserRole': {
+      id: '/table/EndUserRole'
+      path: '/EndUserRole'
+      fullPath: '/table/EndUserRole'
+      preLoaderRoute: typeof TableEndUserRoleRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/EndUser': {
+      id: '/table/EndUser'
+      path: '/EndUser'
+      fullPath: '/table/EndUser'
+      preLoaderRoute: typeof TableEndUserRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Employee': {
+      id: '/table/Employee'
+      path: '/Employee'
+      fullPath: '/table/Employee'
+      preLoaderRoute: typeof TableEmployeeRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Department': {
+      id: '/table/Department'
+      path: '/Department'
+      fullPath: '/table/Department'
+      preLoaderRoute: typeof TableDepartmentRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Company': {
+      id: '/table/Company'
+      path: '/Company'
+      fullPath: '/table/Company'
+      preLoaderRoute: typeof TableCompanyRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Category': {
+      id: '/table/Category'
+      path: '/Category'
+      fullPath: '/table/Category'
+      preLoaderRoute: typeof TableCategoryRouteImport
+      parentRoute: typeof TableRouteRoute
+    }
+    '/table/Building': {
+      id: '/table/Building'
+      path: '/Building'
+      fullPath: '/table/Building'
+      preLoaderRoute: typeof TableBuildingRouteImport
       parentRoute: typeof TableRouteRoute
     }
     '/table/AssetTransfer': {
@@ -412,7 +659,20 @@ interface TableRouteRouteChildren {
   TableAssetFixRoute: typeof TableAssetFixRoute
   TableAssetIssueRoute: typeof TableAssetIssueRoute
   TableAssetTransferRoute: typeof TableAssetTransferRoute
+  TableBuildingRoute: typeof TableBuildingRoute
+  TableCategoryRoute: typeof TableCategoryRoute
+  TableCompanyRoute: typeof TableCompanyRoute
+  TableDepartmentRoute: typeof TableDepartmentRoute
+  TableEmployeeRoute: typeof TableEmployeeRoute
+  TableEndUserRoute: typeof TableEndUserRoute
+  TableEndUserRoleRoute: typeof TableEndUserRoleRoute
+  TableLocationRoute: typeof TableLocationRoute
+  TableManufacturerRoute: typeof TableManufacturerRoute
+  TableProductRoute: typeof TableProductRoute
+  TableProductSetRoute: typeof TableProductSetRoute
   TableQRPageRoute: typeof TableQRPageRoute
+  TableRoleRoute: typeof TableRoleRoute
+  TableVendorRoute: typeof TableVendorRoute
   TableIndexRoute: typeof TableIndexRoute
 }
 
@@ -421,7 +681,20 @@ const TableRouteRouteChildren: TableRouteRouteChildren = {
   TableAssetFixRoute: TableAssetFixRoute,
   TableAssetIssueRoute: TableAssetIssueRoute,
   TableAssetTransferRoute: TableAssetTransferRoute,
+  TableBuildingRoute: TableBuildingRoute,
+  TableCategoryRoute: TableCategoryRoute,
+  TableCompanyRoute: TableCompanyRoute,
+  TableDepartmentRoute: TableDepartmentRoute,
+  TableEmployeeRoute: TableEmployeeRoute,
+  TableEndUserRoute: TableEndUserRoute,
+  TableEndUserRoleRoute: TableEndUserRoleRoute,
+  TableLocationRoute: TableLocationRoute,
+  TableManufacturerRoute: TableManufacturerRoute,
+  TableProductRoute: TableProductRoute,
+  TableProductSetRoute: TableProductSetRoute,
   TableQRPageRoute: TableQRPageRoute,
+  TableRoleRoute: TableRoleRoute,
+  TableVendorRoute: TableVendorRoute,
   TableIndexRoute: TableIndexRoute,
 }
 
