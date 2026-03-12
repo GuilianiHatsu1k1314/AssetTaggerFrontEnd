@@ -58,7 +58,25 @@ function TableSelection() {
 // ----------------------------------------------------------------------------
 // Dropdown Component
 // ----------------------------------------------------------------------------
-const options = ["Asset", "AssetFix", "AssetIssue", "AssetTransfer"];
+const options = [
+  "Asset",
+  "AssetFix",
+  "AssetIssue",
+  "AssetTransfer",
+  "Building",
+  "Category",
+  "Company",
+  "Department",
+  "Employee",
+  "EndUser",
+  "EndUserRole",
+  "Location",
+  "Manufacturer",
+  "Product",
+  "ProductSet",
+  "Role",
+  "Vendor",
+];
 
 function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,7 +125,7 @@ function Dropdown() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute top-full left-0 z-10 mt-2 w-full overflow-hidden rounded-xl border border-gray-100 bg-white py-2 shadow-xl">
+        <div className="animate-in fade-in slide-in-from-top-2 custom-scrollbar absolute top-full left-0 z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-xl border border-gray-100 bg-white py-2 shadow-xl">
           {options.map((option, index) => (
             <div
               className="cursor-pointer px-5 py-3 font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-[#567bfb]"
