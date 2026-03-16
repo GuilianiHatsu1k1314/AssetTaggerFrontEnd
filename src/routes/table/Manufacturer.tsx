@@ -100,12 +100,13 @@ function ManufacturerPage() {
 
   const handleRowClick = (manufacturerId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { manufacturerId }, to: "/EditValue" as any });
+      navigate({
+        search: { id: manufacturerId, tableName: "Manufacturer" },
+        to: "/EditValue" as any,
+      });
       setIsEditMode(false);
     }
   };
-
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -162,7 +163,7 @@ function ManufacturerPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Manufacturer form later
+              to={`/AddValue?tableName=Manufacturer`}
             >
               <svg
                 fill="none"

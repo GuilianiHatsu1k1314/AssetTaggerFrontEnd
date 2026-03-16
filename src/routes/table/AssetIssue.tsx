@@ -11,51 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Correctly import the hook and type from the new DatabaseContext file
+import { type AssetIssue, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/AssetIssue")({
   component: AssetIssuePage,
 });
-
-// 1. DATA TYPES BASED ON AssetIssue.sql SCHEMA
-interface AssetIssue {
-  assetId: string; // UNIQUEIDENTIFIER (FK)
-  assetIssueDate: string; // DATETIME
-  assetIssueDescription: null | string; // NVARCHAR(MAX)
-  assetIssueId: string; // UNIQUEIDENTIFIER (PK)
-  assetIssueTitle: string; // NVARCHAR(4000)
-  employeeId: string; // UNIQUEIDENTIFIER (FK)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: AssetIssue[] = [
-  {
-    assetId: "AST-8002",
-    assetIssueDate: "03/09/2026",
-    assetIssueDescription:
-      "The secondary display flickers periodically when connected via HDMI.",
-    assetIssueId: "ISS-104A",
-    assetIssueTitle: "Monitor Flickering",
-    employeeId: "EMP-214",
-  },
-  {
-    assetId: "AST-7099",
-    assetIssueDate: "03/11/2026",
-    assetIssueDescription:
-      "Laptop powers off immediately when unplugged from the charger.",
-    assetIssueId: "ISS-105B",
-    assetIssueTitle: "Battery Not Holding Charge",
-    employeeId: "EMP-042",
-  },
-  {
-    assetId: "AST-7105",
-    assetIssueDate: "03/12/2026",
-    assetIssueDescription:
-      "The spacebar and 'E' keys are unresponsive and sticky.",
-    assetIssueId: "ISS-106C",
-    assetIssueTitle: "Keyboard Keys Sticking",
-    employeeId: "EMP-088",
-  },
-];
 
 const columnHelper = createColumnHelper<AssetIssue>();
 
@@ -104,17 +65,34 @@ const columns = [
 ];
 
 function AssetIssuePage() {
-  // Using local state for now until context/API is connected
-  const [issues] = useState<AssetIssue[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the AssetIssue table from the universal context!
+  const { getTableData } = useDatabase();
+  const issues = getTableData("AssetIssue");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    // Check if the user left edit mode ON in their current session
+    return sessionStorage.getItem("AssetIssue_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    // Save their preference to session storage
+    sessionStorage.setItem("AssetIssue_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: issues,
+    data: issues, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -131,8 +109,11 @@ function AssetIssuePage() {
 
   const handleRowClick = (assetIssueId: string) => {
     if (isEditMode) {
-      navigate({ search: { assetIssueId }, to: "/EditValue" as any });
-      setIsEditMode(false);
+      navigate({
+        search: { id: assetIssueId, tableName: "AssetIssue" },
+        to: "/EditValue" as any,
+      });
+      // REMOVED: setIsEditMode(false) - We want it to stay ON when we come back!
     }
   };
 
@@ -192,7 +173,7 @@ function AssetIssuePage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Issue form later
+              to={`/AddValue?tableName=AssetIssue`}
             >
               <svg
                 fill="none"
@@ -217,9 +198,7 @@ function AssetIssuePage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Now using our new sticky toggle
             >
               <svg
                 fill="none"
@@ -260,7 +239,7 @@ function AssetIssuePage() {
                     strokeWidth={2}
                   />
                 </svg>
-                Sort Logs
+                Sort & Filter
               </button>
 
               {/* DROPDOWN MENU */}

@@ -7,61 +7,200 @@ import {
 import { useEffect, useState } from "react";
 
 import { Sidebar } from "./components/-SideBar";
-import { useAssetContext } from "./context/-AssetContext";
+import { useDatabase } from "./context/-AssetContext";
 
+// 1. Updated Search Params to require BOTH tableName and the ID
 export const Route = createFileRoute("/EditValue")({
   component: EditValuePage,
   validateSearch: (search: Record<string, unknown>) => {
-    return { assetId: search.assetId as string };
+    return {
+      id: (search.id as string) || (search.assetId as string), // Fallback for old links
+      tableName: (search.tableName as string) || "Asset",
+    };
   },
 });
 
-// Helper function to convert MM/DD/YYYY to YYYY-MM-DD for the HTML date picker
+// ============================================================================
+// HELPER FUNCTIONS (Must be outside the component)
+// ============================================================================
 const formatForDatePicker = (dateStr: string) => {
   if (!dateStr?.includes("/")) return dateStr;
   const [month, day, year] = dateStr.split("/");
-  // Ensure month and day are 2 digits
   const paddedMonth = month.padStart(2, "0");
   const paddedDay = day.padStart(2, "0");
   return `${year}-${paddedMonth}-${paddedDay}`;
 };
 
-// Helper function to convert YYYY-MM-DD back to MM/DD/YYYY for saving
 const formatToUSDate = (dateStr: string) => {
   if (!dateStr?.includes("-")) return dateStr;
   const [year, month, day] = dateStr.split("-");
-  // Remove padding if preferred, or keep it (e.g. 01/05/2026 vs 1/5/2026)
   return `${parseInt(month)}/${parseInt(day)}/${year}`;
 };
 
+// ============================================================================
+// CENTRALIZED SCHEMA CONFIGURATIONS (Must be outside the component)
+// ============================================================================
+const tableConfigs: Record<string, any[]> = {
+  Asset: [
+    { isReadOnly: true, key: "assetId", label: "Asset ID" },
+    { key: "assetTagDate", label: "Tag Date", type: "date" },
+    { key: "purchaseDate", label: "Purchase Date", type: "date" },
+    { key: "purchasePrice", label: "Purchase Price", type: "text" },
+    { key: "serialNumber", label: "Serial Number", type: "text" },
+    {
+      key: "warrantyUnit",
+      label: "Warranty Unit",
+      options: [
+        { label: "mm (Month)", value: "mm" },
+        { label: "yy (Year)", value: "yy" },
+      ],
+    },
+    { key: "warrantyDuration", label: "Warranty Duration", type: "number" },
+  ],
+  AssetFix: [
+    { isReadOnly: true, key: "assetFixId", label: "Fix ID" },
+    { key: "assetIssueId", label: "Issue ID", type: "text" },
+    { key: "assetFixDateStart", label: "Date Start", type: "date" },
+    { key: "assetFixDateEnd", label: "Date End", type: "date" },
+    { key: "assetFixCost", label: "Cost", type: "number" },
+    { key: "assetFixTitle", label: "Title", type: "text" },
+    { key: "assetFixDescription", label: "Description", type: "text" },
+    {
+      key: "assetFixed",
+      label: "Status",
+      options: [
+        { label: "Fixed", value: "true" },
+        { label: "Pending", value: "false" },
+      ],
+    },
+    { key: "employeeId", label: "Employee ID", type: "text" },
+  ],
+  AssetIssue: [
+    { isReadOnly: true, key: "assetIssueId", label: "Issue ID" },
+    { key: "assetIssueTitle", label: "Title", type: "text" },
+    { key: "assetIssueDescription", label: "Description", type: "text" },
+    { key: "assetIssueDate", label: "Issue Date", type: "date" },
+    { key: "assetId", label: "Asset ID (Target)", type: "text" },
+    { key: "employeeId", label: "Reported By (Emp ID)", type: "text" },
+  ],
+  AssetTransfer: [
+    { isReadOnly: true, key: "assetTransferId", label: "Transfer ID" },
+    { key: "assetTransferDate", label: "Transfer Date", type: "date" },
+    { key: "assetTransferPrice", label: "Transfer Price", type: "text" },
+    { key: "assetId", label: "Asset ID", type: "text" },
+    { key: "companyId", label: "Origin Company ID", type: "text" },
+    { key: "receivingCompanyId", label: "Receiving Company ID", type: "text" },
+  ],
+  Building: [
+    { isReadOnly: true, key: "buildingId", label: "Building ID" },
+    { key: "buildingName", label: "Building Name", type: "text" },
+    { key: "companyId", label: "Company ID", type: "text" },
+    { key: "buildingAddress", label: "Address", type: "text" },
+    { key: "buildingInsertDate", label: "Date Added", type: "date" },
+  ],
+  Company: [
+    { isReadOnly: true, key: "companyId", label: "Company ID" },
+    { key: "companyCode", label: "Company Code", type: "text" },
+    { key: "companyName", label: "Company Name", type: "text" },
+    { key: "parentCompanyId", label: "Parent Company ID", type: "text" },
+    { key: "companyAddress", label: "Address", type: "text" },
+  ],
+  Department: [
+    { isReadOnly: true, key: "departmentId", label: "Department ID" },
+    { key: "departmentName", label: "Department Name", type: "text" },
+    { key: "departmentInsertDate", label: "Date Added", type: "date" },
+  ],
+  EndUser: [
+    { isReadOnly: true, key: "endUserId", label: "User ID" },
+    { key: "endUserName", label: "Username", type: "text" },
+    { key: "endUserRoleId", label: "Role ID", type: "text" },
+    { key: "employeeId", label: "Employee ID", type: "text" },
+    { key: "endUserRegisterDate", label: "Registration Date", type: "date" },
+  ],
+  Location: [
+    { isReadOnly: true, key: "locationId", label: "Location ID" },
+    { key: "locationAddress", label: "Address / Room", type: "text" },
+    { key: "buildingId", label: "Building ID", type: "text" },
+    { key: "locationInsertDate", label: "Date Added", type: "date" },
+  ],
+  Manufacturer: [
+    { isReadOnly: true, key: "manufacturerId", label: "Manufacturer ID" },
+    { key: "manufacturerName", label: "Manufacturer Name", type: "text" },
+    { key: "manufacturerInsertDate", label: "Date Added", type: "date" },
+  ],
+  Product: [
+    { isReadOnly: true, key: "productId", label: "Product ID" },
+    { key: "productName", label: "Product Name", type: "text" },
+    { key: "productModelNumber", label: "Model Number", type: "text" },
+    { key: "manufacturerId", label: "Manufacturer ID", type: "text" },
+    { key: "categoryId", label: "Category ID", type: "text" },
+    { key: "productInsertDate", label: "Date Added", type: "date" },
+  ],
+  ProductSet: [
+    { isReadOnly: true, key: "parentProductId", label: "Parent Product ID" },
+    { isReadOnly: true, key: "productId", label: "Child Product ID" },
+    { key: "productSetInsertDate", label: "Date Added", type: "date" },
+  ],
+  Role: [
+    { isReadOnly: true, key: "roleId", label: "Role ID" },
+    { key: "roleName", label: "Role Name", type: "text" },
+    { key: "roleInsertDate", label: "Date Added", type: "date" },
+  ],
+  Vendor: [
+    { isReadOnly: true, key: "vendorId", label: "Vendor ID" },
+    { key: "vendorName", label: "Vendor Name", type: "text" },
+    { key: "vendorAddress", label: "Address", type: "text" },
+    { key: "vendorInsertDate", label: "Date Added", type: "date" },
+  ],
+};
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 function EditValuePage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/EditValue" });
-  const { assets, updateAsset } = useAssetContext();
 
-  const [formData, setFormData] = useState({
-    assetTagDate: "",
-    purchaseDate: "",
-    purchasePrice: "",
-    serialNumber: "",
-    warrantyDuration: 0,
-    warrantyUnit: "",
-  });
+  const currentTableConfig =
+    tableConfigs[search.tableName] || tableConfigs.Asset;
+
+  // Pulling 'db' directly ensures we always have the latest reference
+  const { db, updateRecord } = useDatabase();
+
+  const [formData, setFormData] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    const selectedAsset = assets.find((a) => a.assetId === search.assetId);
-    if (selectedAsset) {
-      setFormData({
-        // Format dates correctly so the calendar UI actually shows the value
-        assetTagDate: formatForDatePicker(selectedAsset.assetTagDate),
-        purchaseDate: formatForDatePicker(selectedAsset.purchaseDate),
-        purchasePrice: selectedAsset.purchasePrice,
-        serialNumber: selectedAsset.serialNumber,
-        warrantyDuration: selectedAsset.warrantyDuration,
-        warrantyUnit: selectedAsset.warrantyUnit,
+    // 1. Get the entire table array directly from db
+    const tableData = db[search.tableName] || [];
+
+    // 2. Identify the primary key column from our config (usually the first item)
+    const primaryKeyId = currentTableConfig[0].key;
+
+    // 3. Find the specific row to edit (Using String().trim() to make it bulletproof against typos)
+    const selectedRecord = tableData.find(
+      (row) => String(row[primaryKeyId]).trim() === String(search.id).trim(),
+    );
+
+    if (selectedRecord) {
+      const initialData: Record<string, any> = {};
+
+      currentTableConfig.forEach((col) => {
+        if (col.type === "date") {
+          initialData[col.key] = formatForDatePicker(
+            selectedRecord[col.key] || "",
+          );
+        } else {
+          initialData[col.key] = selectedRecord[col.key] || "";
+        }
       });
+
+      setFormData(initialData);
+    } else {
+      console.warn(
+        `🚨 WARNING: Could not find ID '${search.id}' in the '${search.tableName}' table. Make sure your local storage is cleared and your table is using getTableData()!`,
+      );
     }
-  }, [search.assetId, assets]);
+  }, [search.id, search.tableName, db, currentTableConfig]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -71,17 +210,28 @@ function EditValuePage() {
   };
 
   const handleSave = () => {
-    // Format dates back to the standard MM/DD/YYYY before saving
-    const formattedData = {
-      ...formData,
-      assetTagDate: formatToUSDate(formData.assetTagDate),
-      purchaseDate: formatToUSDate(formData.purchaseDate),
-      warrantyDuration: Number(formData.warrantyDuration),
-    };
+    const formattedData = { ...formData };
 
-    updateAsset(search.assetId, formattedData);
-    alert("Asset updated successfully!");
-    navigate({ to: "/table/Asset" });
+    currentTableConfig.forEach((col) => {
+      if (col.type === "date") {
+        formattedData[col.key] = formatToUSDate(formattedData[col.key]);
+      }
+      if (col.type === "number") {
+        formattedData[col.key] = Number(formattedData[col.key]);
+      }
+      // For the boolean select box on AssetFix
+      if (col.key === "assetFixed") {
+        formattedData[col.key] = formattedData[col.key] === "true";
+      }
+    });
+
+    const primaryKeyId = currentTableConfig[0].key;
+
+    // Dynamically update the correct table using the context
+    updateRecord(search.tableName, primaryKeyId, search.id, formattedData);
+
+    alert(`${search.tableName} updated successfully!`);
+    navigate({ to: `/table/${search.tableName}` });
   };
 
   return (
@@ -89,7 +239,6 @@ function EditValuePage() {
       <Sidebar />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
-        {/* Breadcrumbs */}
         <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
           <Link
             className="hover:text-blue-600 hover:underline"
@@ -100,15 +249,14 @@ function EditValuePage() {
           <span>/</span>
           <Link
             className="hover:text-blue-600 hover:underline"
-            to="/table/Asset"
+            to={`/table/${search.tableName}`}
           >
-            Table Display
+            {search.tableName} Display
           </Link>
           <span>/</span>
-          <span className="text-gray-900">Edit Value</span>
+          <span className="text-gray-900">Edit {search.tableName}</span>
         </div>
 
-        {/* Header Section */}
         <div className="mb-8 flex items-center gap-4">
           <button
             className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -133,137 +281,86 @@ function EditValuePage() {
           </button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-              Edit Asset
+              Edit {search.tableName}
             </h1>
             <p className="mt-1 text-sm text-gray-500 md:text-base">
-              Update the details for Asset ID:{" "}
-              <span className="font-semibold text-blue-600">
-                {search.assetId}
-              </span>
+              Update the details for ID:{" "}
+              <span className="font-semibold text-blue-600">{search.id}</span>
             </p>
           </div>
         </div>
 
         <div className="w-full max-w-[1400px]">
-          {/* Modern Table Container */}
           <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px] table-auto text-left text-sm">
-                {/* Table Header */}
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Asset ID
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Tag Date
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Purchase Date
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Purchase Price
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Serial Number
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Warranty Unit
-                    </th>
-                    <th className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
-                      Warranty Duration
-                    </th>
+                    {currentTableConfig.map((col) => (
+                      <th
+                        className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
+                        key={col.key}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
 
-                {/* Table Body */}
                 <tbody className="bg-white">
                   <tr className="hover:bg-gray-50">
-                    {/* Read-Only Asset ID */}
-                    <td className="px-4 py-4 align-middle">
-                      <div className="flex w-full min-w-[100px] items-center justify-center rounded-md bg-gray-100 px-3 py-2 text-sm font-bold text-gray-700">
-                        {search.assetId}
-                      </div>
-                    </td>
+                    {currentTableConfig.map((col) => {
+                      if (col.isReadOnly) {
+                        return (
+                          <td className="px-4 py-4 align-middle" key={col.key}>
+                            <div className="flex w-full min-w-[100px] items-center justify-center rounded-md bg-gray-100 px-3 py-2 text-sm font-bold text-gray-700">
+                              {search.id}
+                            </div>
+                          </td>
+                        );
+                      }
 
-                    {/* Tag Date (CHANGED TO type="date") */}
-                    <td className="px-4 py-4 align-middle">
-                      <input
-                        className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="assetTagDate"
-                        onChange={handleChange}
-                        type="date"
-                        value={formData.assetTagDate}
-                      />
-                    </td>
+                      if (col.options) {
+                        return (
+                          <td className="px-4 py-4 align-middle" key={col.key}>
+                            <select
+                              className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                              name={col.key}
+                              onChange={handleChange}
+                              value={String(formData[col.key] || "")}
+                            >
+                              <option disabled value="">
+                                -- Select --
+                              </option>
+                              {col.options.map((opt: any) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        );
+                      }
 
-                    {/* Purchase Date (CHANGED TO type="date") */}
-                    <td className="px-4 py-4 align-middle">
-                      <input
-                        className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="purchaseDate"
-                        onChange={handleChange}
-                        type="date"
-                        value={formData.purchaseDate}
-                      />
-                    </td>
-
-                    {/* Purchase Price */}
-                    <td className="px-4 py-4 align-middle">
-                      <input
-                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="purchasePrice"
-                        onChange={handleChange}
-                        placeholder="e.g. 20000"
-                        value={formData.purchasePrice}
-                      />
-                    </td>
-
-                    {/* Serial Number */}
-                    <td className="px-4 py-4 align-middle">
-                      <input
-                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="serialNumber"
-                        onChange={handleChange}
-                        placeholder="e.g. SN-9F3K"
-                        value={formData.serialNumber}
-                      />
-                    </td>
-
-                    {/* Warranty Unit Dropdown */}
-                    <td className="px-4 py-4 align-middle">
-                      <select
-                        className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="warrantyUnit"
-                        onChange={handleChange}
-                        value={formData.warrantyUnit}
-                      >
-                        <option disabled value="">
-                          -- Select --
-                        </option>
-                        <option value="mm">mm (Month)</option>
-                        <option value="yy">yy (Year)</option>
-                      </select>
-                    </td>
-
-                    {/* Warranty Duration */}
-                    <td className="px-4 py-4 align-middle">
-                      <input
-                        className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                        name="warrantyDuration"
-                        onChange={handleChange}
-                        placeholder="e.g. 12"
-                        type="number"
-                        value={formData.warrantyDuration}
-                      />
-                    </td>
+                      return (
+                        <td className="px-4 py-4 align-middle" key={col.key}>
+                          <input
+                            className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                            name={col.key}
+                            onChange={handleChange}
+                            placeholder={`Enter ${col.label}...`}
+                            type={col.type || "text"}
+                            value={formData[col.key] || ""}
+                          />
+                        </td>
+                      );
+                    })}
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Save Button */}
           <div className="mt-8 flex justify-end">
             <button
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"

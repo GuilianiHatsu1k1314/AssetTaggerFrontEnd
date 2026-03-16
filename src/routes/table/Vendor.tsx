@@ -142,8 +142,10 @@ function VendorPage() {
 
   const handleRowClick = (vendorId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { vendorId }, to: "/EditValue" as any });
+      navigate({
+        search: { id: vendorId, tableName: "Vendor" },
+        to: "/EditValue" as any,
+      });
       setIsEditMode(false);
     }
   };
@@ -204,7 +206,7 @@ function VendorPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Vendor form later
+              to={`/AddValue?tableName=Vendor`}
             >
               <svg
                 fill="none"

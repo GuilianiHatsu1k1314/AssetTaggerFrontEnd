@@ -100,12 +100,13 @@ function RolePage() {
 
   const handleRowClick = (roleId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { roleId }, to: "/EditValue" as any });
+      navigate({
+        search: { id: roleId, tableName: "Role" },
+        to: "/EditValue" as any,
+      });
       setIsEditMode(false);
     }
   };
-
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -162,7 +163,7 @@ function RolePage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Role form later
+              to={`/AddValue?tableName=Role`}
             >
               <svg
                 fill="none"

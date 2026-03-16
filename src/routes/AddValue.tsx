@@ -1,47 +1,162 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Sidebar } from "./components/-SideBar";
-import { useAssetContext } from "./context/-AssetContext";
+import { useDatabase } from "./context/-AssetContext"; // Updated Context
 
+// 1. Require tableName in the search params
 export const Route = createFileRoute("/AddValue")({
-  component: AddAssetPage,
+  component: AddValuePage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      tableName: (search.tableName as string) || "Asset", // Default to Asset if missing
+    };
+  },
 });
 
-// 1. DYNAMIC SCHEMA CONFIGURATION
-const tableColumns = [
-  {
-    isReadOnly: true,
-    key: "assetId",
-    label: "Asset ID",
-    placeholder: "(Auto)",
-  },
-  { key: "assetTagDate", label: "Tag Date", placeholder: "MM/DD/YYYY" },
-  { key: "purchaseDate", label: "Purchase Date", placeholder: "MM/DD/YYYY" },
-  { key: "purchasePrice", label: "Purchase Price", placeholder: "e.g. 20000" },
-  { key: "serialNumber", label: "Serial Number", placeholder: "e.g. SN-9F3K" },
-  {
-    key: "warrantyUnit",
-    label: "Warranty Unit",
-    options: [
-      { label: "mm (Month)", value: "mm" },
-      { label: "yy (Year)", value: "yy" },
-    ],
-  },
-  {
-    key: "warrantyDuration",
-    label: "Warranty Duration",
-    placeholder: "e.g. 12",
-  },
-];
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+const formatToUSDate = (dateStr: string) => {
+  if (!dateStr?.includes("-")) return dateStr;
+  const [year, month, day] = dateStr.split("-");
+  return `${parseInt(month)}/${parseInt(day)}/${year}`;
+};
 
-function AddAssetPage() {
+// ============================================================================
+// CENTRALIZED SCHEMA CONFIGURATIONS (Matches EditValue.tsx)
+// ============================================================================
+const tableConfigs: Record<string, any[]> = {
+  Asset: [
+    { isReadOnly: true, key: "assetId", label: "Asset ID" },
+    { key: "assetTagDate", label: "Tag Date", type: "date" },
+    { key: "purchaseDate", label: "Purchase Date", type: "date" },
+    { key: "purchasePrice", label: "Purchase Price", type: "text" },
+    { key: "serialNumber", label: "Serial Number", type: "text" },
+    {
+      key: "warrantyUnit",
+      label: "Warranty Unit",
+      options: [
+        { label: "mm (Month)", value: "mm" },
+        { label: "yy (Year)", value: "yy" },
+      ],
+    },
+    { key: "warrantyDuration", label: "Warranty Duration", type: "number" },
+  ],
+  AssetFix: [
+    { isReadOnly: true, key: "assetFixId", label: "Fix ID" },
+    { key: "assetIssueId", label: "Issue ID", type: "text" },
+    { key: "assetFixDateStart", label: "Date Start", type: "date" },
+    { key: "assetFixDateEnd", label: "Date End", type: "date" },
+    { key: "assetFixCost", label: "Cost", type: "number" },
+    { key: "assetFixTitle", label: "Title", type: "text" },
+    { key: "assetFixDescription", label: "Description", type: "text" },
+    {
+      key: "assetFixed",
+      label: "Status",
+      options: [
+        { label: "Fixed", value: "true" },
+        { label: "Pending", value: "false" },
+      ],
+    },
+    { key: "employeeId", label: "Employee ID", type: "text" },
+  ],
+  AssetIssue: [
+    { isReadOnly: true, key: "assetIssueId", label: "Issue ID" },
+    { key: "assetIssueTitle", label: "Title", type: "text" },
+    { key: "assetIssueDescription", label: "Description", type: "text" },
+    { key: "assetIssueDate", label: "Issue Date", type: "date" },
+    { key: "assetId", label: "Asset ID (Target)", type: "text" },
+    { key: "employeeId", label: "Reported By (Emp ID)", type: "text" },
+  ],
+  AssetTransfer: [
+    { isReadOnly: true, key: "assetTransferId", label: "Transfer ID" },
+    { key: "assetTransferDate", label: "Transfer Date", type: "date" },
+    { key: "assetTransferPrice", label: "Transfer Price", type: "text" },
+    { key: "assetId", label: "Asset ID", type: "text" },
+    { key: "companyId", label: "Origin Company ID", type: "text" },
+    { key: "receivingCompanyId", label: "Receiving Company ID", type: "text" },
+  ],
+  Building: [
+    { isReadOnly: true, key: "buildingId", label: "Building ID" },
+    { key: "buildingName", label: "Building Name", type: "text" },
+    { key: "companyId", label: "Company ID", type: "text" },
+    { key: "buildingAddress", label: "Address", type: "text" },
+    { key: "buildingInsertDate", label: "Date Added", type: "date" },
+  ],
+  Company: [
+    { isReadOnly: true, key: "companyId", label: "Company ID" },
+    { key: "companyCode", label: "Company Code", type: "text" },
+    { key: "companyName", label: "Company Name", type: "text" },
+    { key: "parentCompanyId", label: "Parent Company ID", type: "text" },
+    { key: "companyAddress", label: "Address", type: "text" },
+  ],
+  Department: [
+    { isReadOnly: true, key: "departmentId", label: "Department ID" },
+    { key: "departmentName", label: "Department Name", type: "text" },
+    { key: "departmentInsertDate", label: "Date Added", type: "date" },
+  ],
+  EndUser: [
+    { isReadOnly: true, key: "endUserId", label: "User ID" },
+    { key: "endUserName", label: "Username", type: "text" },
+    { key: "endUserRoleId", label: "Role ID", type: "text" },
+    { key: "employeeId", label: "Employee ID", type: "text" },
+    { key: "endUserRegisterDate", label: "Registration Date", type: "date" },
+  ],
+  Location: [
+    { isReadOnly: true, key: "locationId", label: "Location ID" },
+    { key: "locationAddress", label: "Address / Room", type: "text" },
+    { key: "buildingId", label: "Building ID", type: "text" },
+    { key: "locationInsertDate", label: "Date Added", type: "date" },
+  ],
+  Manufacturer: [
+    { isReadOnly: true, key: "manufacturerId", label: "Manufacturer ID" },
+    { key: "manufacturerName", label: "Manufacturer Name", type: "text" },
+    { key: "manufacturerInsertDate", label: "Date Added", type: "date" },
+  ],
+  Product: [
+    { isReadOnly: true, key: "productId", label: "Product ID" },
+    { key: "productName", label: "Product Name", type: "text" },
+    { key: "productModelNumber", label: "Model Number", type: "text" },
+    { key: "manufacturerId", label: "Manufacturer ID", type: "text" },
+    { key: "categoryId", label: "Category ID", type: "text" },
+    { key: "productInsertDate", label: "Date Added", type: "date" },
+  ],
+  ProductSet: [
+    { isReadOnly: true, key: "parentProductId", label: "Parent Product ID" },
+    { isReadOnly: true, key: "productId", label: "Child Product ID" },
+    { key: "productSetInsertDate", label: "Date Added", type: "date" },
+  ],
+  Role: [
+    { isReadOnly: true, key: "roleId", label: "Role ID" },
+    { key: "roleName", label: "Role Name", type: "text" },
+    { key: "roleInsertDate", label: "Date Added", type: "date" },
+  ],
+  Vendor: [
+    { isReadOnly: true, key: "vendorId", label: "Vendor ID" },
+    { key: "vendorName", label: "Vendor Name", type: "text" },
+    { key: "vendorAddress", label: "Address", type: "text" },
+    { key: "vendorInsertDate", label: "Date Added", type: "date" },
+  ],
+};
+
+function AddValuePage() {
   const navigate = useNavigate();
-  const { addAsset } = useAssetContext();
+  const search = useSearch({ from: "/AddValue" });
+  const { addRecord } = useDatabase();
+
+  // Determine which configuration to use based on the URL
+  const currentTableConfig =
+    tableConfigs[search.tableName] || tableConfigs.Asset;
 
   const getBlankRow = () => {
-    const blankRow: Record<string, number | string> = {};
-    tableColumns.forEach((col) => {
+    const blankRow: Record<string, string> = {};
+    currentTableConfig.forEach((col) => {
       blankRow[col.key] = "";
     });
     return blankRow;
@@ -62,8 +177,9 @@ function AddAssetPage() {
   const handleSubmit = () => {
     let isValid = true;
 
+    // Simple Validation: Ensure non-readonly fields aren't completely empty
     for (const row of rows) {
-      for (const col of tableColumns) {
+      for (const col of currentTableConfig) {
         if (!col.isReadOnly) {
           const value = row[col.key];
           if (
@@ -84,28 +200,35 @@ function AddAssetPage() {
       return;
     }
 
+    // Process and Save Data
     rows.forEach((row) => {
-      // If the user used the date picker, the format will be YYYY-MM-DD.
-      // We optionally convert it back to MM/DD/YYYY to match your other screens
-      const formatToUSDate = (dateStr: string) => {
-        if (!dateStr?.includes("-")) return dateStr;
-        const [year, month, day] = dateStr.split("-");
-        return `${month}/${day}/${year}`;
-      };
+      const formattedRow: Record<string, any> = { ...row };
 
-      const newAsset = {
-        ...row,
-        assetId: `0${Math.floor(Math.random() * 10000)}`,
-        assetTagDate: formatToUSDate(String(row.assetTagDate)),
-        purchaseDate: formatToUSDate(String(row.purchaseDate)),
-        warrantyDuration: Number(row.warrantyDuration) || 0,
-      } as any;
+      currentTableConfig.forEach((col) => {
+        // 1. Generate Fake ID for the primary key column (usually the read-only one)
+        if (col.isReadOnly) {
+          formattedRow[col.key] = `NEW-${Math.floor(Math.random() * 10000)}`;
+        }
+        // 2. Format Dates
+        else if (col.type === "date") {
+          formattedRow[col.key] = formatToUSDate(String(row[col.key]));
+        }
+        // 3. Format Numbers
+        else if (col.type === "number") {
+          formattedRow[col.key] = Number(row[col.key]) || 0;
+        }
+        // 4. Format Booleans (for AssetFix)
+        else if (col.key === "assetFixed") {
+          formattedRow[col.key] = row[col.key] === "true";
+        }
+      });
 
-      addAsset(newAsset);
+      // Insert into the global database context!
+      addRecord(search.tableName, formattedRow);
     });
 
-    alert(`Successfully added ${rows.length} new asset(s)!`);
-    navigate({ to: "/table/Asset" });
+    alert(`Successfully added ${rows.length} new ${search.tableName}(s)!`);
+    navigate({ to: `/table/${search.tableName}` });
   };
 
   return (
@@ -124,9 +247,9 @@ function AddAssetPage() {
           <span>/</span>
           <Link
             className="hover:text-blue-600 hover:underline"
-            to="/table/Asset"
+            to={`/table/${search.tableName}`}
           >
-            Table Display
+            {search.tableName} Display
           </Link>
           <span>/</span>
           <span className="text-gray-900">Add New Value</span>
@@ -157,10 +280,11 @@ function AddAssetPage() {
           </button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Add New Assets
+              Add New {search.tableName}s
             </h1>
             <p className="mt-1 text-sm text-gray-500 md:text-base">
-              Fill out the rows below to register new assets into the system.
+              Fill out the rows below to register new{" "}
+              {search.tableName.toLowerCase()}s into the system.
             </p>
           </div>
         </div>
@@ -172,7 +296,7 @@ function AddAssetPage() {
               {/* Table Header */}
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
-                  {tableColumns.map((col) => (
+                  {currentTableConfig.map((col) => (
                     <th
                       className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
                       key={col.key}
@@ -190,19 +314,19 @@ function AddAssetPage() {
                     className="transition-colors hover:bg-gray-50"
                     key={index}
                   >
-                    {tableColumns.map((col) => {
-                      // 1. READ ONLY FIELDS (Asset ID)
+                    {currentTableConfig.map((col) => {
+                      // 1. READ ONLY FIELDS (Auto-Generated IDs)
                       if (col.isReadOnly) {
                         return (
                           <td className="px-4 py-3 align-middle" key={col.key}>
                             <div className="flex w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400">
-                              {col.placeholder || "(Auto)"}
+                              (Auto)
                             </div>
                           </td>
                         );
                       }
 
-                      // 2. DROPDOWN FIELDS (Warranty Unit)
+                      // 2. DROPDOWN FIELDS
                       if (col.options) {
                         return (
                           <td className="px-4 py-3 align-middle" key={col.key}>
@@ -216,7 +340,7 @@ function AddAssetPage() {
                               <option disabled value="">
                                 -- Select --
                               </option>
-                              {col.options.map((opt) => (
+                              {col.options.map((opt: any) => (
                                 <option key={opt.value} value={opt.value}>
                                   {opt.label}
                                 </option>
@@ -226,23 +350,7 @@ function AddAssetPage() {
                         );
                       }
 
-                      // 3. DATE FIELDS (Tag Date, Purchase Date)
-                      if (col.label.includes("Date")) {
-                        return (
-                          <td className="px-4 py-3 align-middle" key={col.key}>
-                            <input
-                              className="w-full min-w-[140px] cursor-text rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                              onChange={(e) => {
-                                handleChange(index, col.key, e.target.value);
-                              }}
-                              type="date"
-                              value={row[col.key]}
-                            />
-                          </td>
-                        );
-                      }
-
-                      // 4. STANDARD TEXT/NUMBER INPUTS
+                      // 3. DATE AND NUMBER FIELDS
                       return (
                         <td className="px-4 py-3 align-middle" key={col.key}>
                           <input
@@ -250,10 +358,8 @@ function AddAssetPage() {
                             onChange={(e) => {
                               handleChange(index, col.key, e.target.value);
                             }}
-                            placeholder={col.placeholder || "Enter value..."}
-                            type={
-                              col.key === "warrantyDuration" ? "number" : "text"
-                            }
+                            placeholder={`Enter ${col.label}...`}
+                            type={col.type || "text"}
                             value={row[col.key]}
                           />
                         </td>
@@ -265,7 +371,7 @@ function AddAssetPage() {
             </table>
           </div>
 
-          {/* Add Row Button (Attached to bottom of table) */}
+          {/* Add Row Button */}
           <div className="border-t border-gray-200 bg-gray-50 p-4">
             <button
               className="group flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none"
@@ -310,7 +416,7 @@ function AddAssetPage() {
               <polyline points="17 21 17 13 7 13 7 21"></polyline>
               <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
-            Save Assets
+            Save {search.tableName}s
           </button>
         </div>
       </main>

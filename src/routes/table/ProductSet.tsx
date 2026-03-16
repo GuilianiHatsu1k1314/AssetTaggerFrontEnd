@@ -97,15 +97,13 @@ function ProductSetPage() {
 
   const handleRowClick = (parentProductId: string, productId: string) => {
     if (isEditMode) {
-      // For composite keys, you might pass both IDs in a real app
       navigate({
-        search: { parentProductId, productId },
+        search: { id: parentProductId, tableName: "ProductSet" },
         to: "/EditValue" as any,
       });
       setIsEditMode(false);
     }
   };
-
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -162,7 +160,7 @@ function ProductSetPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add ProductSet form later
+              to={`/AddValue?tableName=ProductSet`}
             >
               <svg
                 fill="none"

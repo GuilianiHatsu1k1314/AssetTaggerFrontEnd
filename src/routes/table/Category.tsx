@@ -11,41 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Category, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Category")({
   component: CategoryPage,
 });
-
-// 1. DATA TYPES BASED ON Category.sql SCHEMA
-interface Category {
-  categoryId: string; // UNIQUEIDENTIFIER (PK)
-  categoryInsertDate: string; // DATETIME
-  categoryName: string; // NVARCHAR(4000)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Category[] = [
-  {
-    categoryId: "CAT-1001",
-    categoryInsertDate: "01/10/2026",
-    categoryName: "Electronics & IT Equipment",
-  },
-  {
-    categoryId: "CAT-1002",
-    categoryInsertDate: "01/12/2026",
-    categoryName: "Office Furniture",
-  },
-  {
-    categoryId: "CAT-1003",
-    categoryInsertDate: "02/05/2026",
-    categoryName: "Company Vehicles",
-  },
-  {
-    categoryId: "CAT-1004",
-    categoryInsertDate: "03/01/2026",
-    categoryName: "Software Licenses",
-  },
-];
 
 const columnHelper = createColumnHelper<Category>();
 
@@ -73,17 +44,32 @@ const columns = [
 ];
 
 function CategoryPage() {
-  // Using local state for now until context/API is connected
-  const [categories] = useState<Category[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Category table!
+  const { getTableData } = useDatabase();
+  const categories = getTableData("Category");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Category_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Category_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: categories,
+    data: categories, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -100,9 +86,11 @@ function CategoryPage() {
 
   const handleRowClick = (categoryId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { categoryId }, to: "/EditValue" as any });
-      setIsEditMode(false);
+      navigate({
+        search: { id: categoryId, tableName: "Category" },
+        to: "/EditValue" as any,
+      });
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
 
@@ -162,7 +150,7 @@ function CategoryPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Category form later
+              to={`/AddValue?tableName=Category`}
             >
               <svg
                 fill="none"
@@ -187,9 +175,7 @@ function CategoryPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the new sticky toggle here!
             >
               <svg
                 fill="none"

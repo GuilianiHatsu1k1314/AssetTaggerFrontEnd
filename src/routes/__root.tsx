@@ -1,13 +1,13 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-import { AssetProvider } from "./context/-AssetContext";
+import { DatabaseProvider } from "./context/-AssetContext";
 
 const RootLayout = () => (
-  <AssetProvider>
+  <DatabaseProvider>
     <Outlet />
     <TanStackRouterDevtools />
-  </AssetProvider>
+  </DatabaseProvider>
 );
 
 export const Route = createRootRoute({ component: RootLayout });

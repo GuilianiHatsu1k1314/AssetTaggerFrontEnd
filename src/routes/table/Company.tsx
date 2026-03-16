@@ -135,12 +135,13 @@ function CompanyPage() {
 
   const handleRowClick = (companyId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { companyId }, to: "/EditValue" as any });
+      navigate({
+        search: { id: companyId, tableName: "Company" },
+        to: "/EditValue" as any,
+      });
       setIsEditMode(false);
     }
   };
-
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -197,7 +198,7 @@ function CompanyPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Company form later
+              to={`/AddValue?tableName=Company`}
             >
               <svg
                 fill="none"

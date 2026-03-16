@@ -11,44 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Building, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Building")({
   component: BuildingPage,
 });
-
-// 1. DATA TYPES BASED ON Building.sql SCHEMA
-interface Building {
-  buildingAddress: string; // NVARCHAR(4000)
-  buildingId: string; // UNIQUEIDENTIFIER (PK)
-  buildingInsertDate: string; // DATETIME
-  buildingName: string; // NVARCHAR(4000)
-  companyId: string; // UNIQUEIDENTIFIER (FK)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Building[] = [
-  {
-    buildingAddress: "123 Nepo Center, Angeles City",
-    buildingId: "BLD-5001",
-    buildingInsertDate: "01/15/2026",
-    buildingName: "Entec 1",
-    companyId: "CMP-MAIN-HQ",
-  },
-  {
-    buildingAddress: "456 Nepo Center, Angeles City",
-    buildingId: "BLD-5002",
-    buildingInsertDate: "02/10/2026",
-    buildingName: "Entec 2",
-    companyId: "CMP-MAIN-HQ",
-  },
-  {
-    buildingAddress: "789 Industrial Drive, Clark",
-    buildingId: "BLD-5003",
-    buildingInsertDate: "03/05/2026",
-    buildingName: "Warehouse Alpha",
-    companyId: "CMP-LOGISTICS",
-  },
-];
 
 const columnHelper = createColumnHelper<Building>();
 
@@ -93,17 +61,32 @@ const columns = [
 ];
 
 function BuildingPage() {
-  // Using local state for now until context/API is connected
-  const [buildings] = useState<Building[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Building table!
+  const { getTableData } = useDatabase();
+  const buildings = getTableData("Building");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Building_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Building_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: buildings,
+    data: buildings, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -120,9 +103,11 @@ function BuildingPage() {
 
   const handleRowClick = (buildingId: string) => {
     if (isEditMode) {
-      // Point this to your Edit page and pass the ID
-      navigate({ search: { buildingId }, to: "/EditValue" as any });
-      setIsEditMode(false);
+      navigate({
+        search: { id: buildingId, tableName: "Building" },
+        to: "/EditValue" as any,
+      });
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
 
@@ -182,7 +167,7 @@ function BuildingPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Building form later
+              to={`/AddValue?tableName=Building`}
             >
               <svg
                 fill="none"
@@ -207,9 +192,7 @@ function BuildingPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the new sticky toggle here!
             >
               <svg
                 fill="none"

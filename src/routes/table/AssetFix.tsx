@@ -11,51 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Correctly import the hook and type from the new DatabaseContext file
+import { type AssetFix, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/AssetFix")({
   component: AssetFixPage,
 });
-
-// 1. DATA TYPES BASED ON AssetFix.sql SCHEMA
-interface AssetFix {
-  assetFixCost: null | number | string; // MONEY
-  assetFixDateEnd: null | string; // DATETIME
-  assetFixDateStart: string; // DATETIME
-  assetFixDescription: null | string; // NVARCHAR(MAX)
-  assetFixed: boolean; // BIT (1 or 0 mapped to true/false)
-  assetFixId: string; // UNIQUEIDENTIFIER
-  assetFixTitle: string; // NVARCHAR(4000)
-  assetIssueId: string; // UNIQUEIDENTIFIER (FK)
-  employeeId: string; // UNIQUEIDENTIFIER (FK)
-}
-
-// Dummy data so the table isn't completely empty when you load it
-// You can replace this with your context (e.g., useAssetFixContext) later!
-const mockData: AssetFix[] = [
-  {
-    assetFixCost: "4500",
-    assetFixDateEnd: "03/11/2026",
-    assetFixDateStart: "03/10/2026",
-    assetFixDescription:
-      "Swapped out the cracked LCD panel on the primary terminal.",
-    assetFixed: true,
-    assetFixId: "FIX-001A",
-    assetFixTitle: "Replaced Broken Screen",
-    assetIssueId: "ISS-992B",
-    employeeId: "EMP-102",
-  },
-  {
-    assetFixCost: null,
-    assetFixDateEnd: null,
-    assetFixDateStart: "03/12/2026",
-    assetFixDescription: "Diagnosing intermittent WiFi drops. Parts ordered.",
-    assetFixed: false,
-    assetFixId: "FIX-002B",
-    assetFixTitle: "Network Card Repair",
-    assetIssueId: "ISS-881C",
-    employeeId: "EMP-405",
-  },
-];
 
 const columnHelper = createColumnHelper<AssetFix>();
 
@@ -121,9 +82,11 @@ const columns = [
 ];
 
 function AssetFixPage() {
-  // Using local state for now until you hook up your context/API
-  const [assets] = useState<AssetFix[]>(mockData);
   const navigate = useNavigate();
+
+  // 3. Get live data specifically for the AssetFix table from the universal context!
+  const { getTableData } = useDatabase();
+  const assetFixes = getTableData("AssetFix");
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -131,7 +94,7 @@ function AssetFixPage() {
 
   const table = useReactTable({
     columns,
-    data: assets,
+    data: assetFixes, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -148,8 +111,10 @@ function AssetFixPage() {
 
   const handleRowClick = (assetFixId: string) => {
     if (isEditMode) {
-      // You can point this to an EditAssetFix page in the future!
-      navigate({ search: { assetFixId }, to: "/EditValue" as any });
+      navigate({
+        search: { id: assetFixId, tableName: "AssetFix" },
+        to: "/EditValue" as any,
+      });
       setIsEditMode(false);
     }
   };
@@ -210,7 +175,7 @@ function AssetFixPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can point to an AddAssetFix page later
+              to={`/AddValue?tableName=AssetFix`}
             >
               <svg
                 fill="none"

@@ -11,48 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type AssetTransfer, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/AssetTransfer")({
   component: AssetTransferPage,
 });
-
-// 1. DATA TYPES BASED ON AssetTransfer.sql SCHEMA
-interface AssetTransfer {
-  assetId: string; // UNIQUEIDENTIFIER (FK)
-  assetTransferDate: string; // DATETIME
-  assetTransferId: string; // UNIQUEIDENTIFIER (PK)
-  assetTransferPrice: null | number | string; // MONEY NULL
-  companyId: string; // UNIQUEIDENTIFIER (FK - Originating Company)
-  receivingCompanyId: string; // UNIQUEIDENTIFIER (FK - Receiving Company)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: AssetTransfer[] = [
-  {
-    assetId: "AST-8002",
-    assetTransferDate: "03/01/2026",
-    assetTransferId: "TRF-9001A",
-    assetTransferPrice: "0",
-    companyId: "CMP-MAIN-HQ",
-    receivingCompanyId: "CMP-BRANCH-NORTH",
-  },
-  {
-    assetId: "AST-7099",
-    assetTransferDate: "03/08/2026",
-    assetTransferId: "TRF-9002B",
-    assetTransferPrice: "15000",
-    companyId: "CMP-BRANCH-SOUTH",
-    receivingCompanyId: "CMP-MAIN-HQ",
-  },
-  {
-    assetId: "AST-1044",
-    assetTransferDate: "03/10/2026",
-    assetTransferId: "TRF-9003C",
-    assetTransferPrice: null,
-    companyId: "CMP-MAIN-HQ",
-    receivingCompanyId: "CMP-WAREHOUSE",
-  },
-];
 
 const columnHelper = createColumnHelper<AssetTransfer>();
 
@@ -106,17 +70,32 @@ const columns = [
 ];
 
 function AssetTransferPage() {
-  // Using local state for now until context/API is connected
-  const [transfers] = useState<AssetTransfer[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the AssetTransfer table!
+  const { getTableData } = useDatabase();
+  const transfers = getTableData("AssetTransfer");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("AssetTransfer_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("AssetTransfer_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: transfers,
+    data: transfers, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -133,9 +112,11 @@ function AssetTransferPage() {
 
   const handleRowClick = (assetTransferId: string) => {
     if (isEditMode) {
-      // You can point this to an EditAssetTransfer page later
-      navigate({ search: { assetTransferId }, to: "/EditValue" as any });
-      setIsEditMode(false);
+      navigate({
+        search: { id: assetTransferId, tableName: "AssetTransfer" },
+        to: "/EditValue" as any,
+      });
+      // setIsEditMode(false) has been removed so it stays on!
     }
   };
 
@@ -195,7 +176,7 @@ function AssetTransferPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to="/AddValue" // Can redirect to specific Add Transfer form later
+              to={`/AddValue?tableName=AssetTransfer`}
             >
               <svg
                 fill="none"
@@ -220,9 +201,7 @@ function AssetTransferPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the new sticky toggle here!
             >
               <svg
                 fill="none"
@@ -263,7 +242,7 @@ function AssetTransferPage() {
                     strokeWidth={2}
                   />
                 </svg>
-                Sort Logs
+                Sort & Filter
               </button>
 
               {/* DROPDOWN MENU */}
