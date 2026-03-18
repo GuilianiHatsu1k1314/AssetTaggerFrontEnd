@@ -11,48 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Company, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Company")({
   component: CompanyPage,
 });
-
-// 1. DATA TYPES BASED ON Company.sql SCHEMA
-interface Company {
-  companyAddress: string; // NVARCHAR(4000)
-  companyCode: string; // NVARCHAR(5)
-  companyId: string; // UNIQUEIDENTIFIER (PK)
-  companyInsertDate: string; // DATETIME
-  companyName: string; // NVARCHAR(4000)
-  parentCompanyId: null | string; // UNIQUEIDENTIFIER (FK to Company)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Company[] = [
-  {
-    companyAddress: "Nepo Center, Angeles City, Pampanga",
-    companyCode: "NRG",
-    companyId: "CMP-HQ-001",
-    companyInsertDate: "01/01/2020",
-    companyName: "Nepomuceno Realty Group",
-    parentCompanyId: null, // Top level company
-  },
-  {
-    companyAddress: "123 Entec Bldg, Nepo Center, Angeles City",
-    companyCode: "JDN",
-    companyId: "CMP-BR-002",
-    companyInsertDate: "05/15/2022",
-    companyName: "JDN Head Office",
-    parentCompanyId: "CMP-HQ-001", // Child company / branch
-  },
-  {
-    companyAddress: "Clark Freeport Zone, Pampanga",
-    companyCode: "NLOG",
-    companyId: "CMP-LOG-003",
-    companyInsertDate: "11/20/2025",
-    companyName: "Nepo Logistics & Warehousing",
-    parentCompanyId: "CMP-HQ-001",
-  },
-];
 
 const columnHelper = createColumnHelper<Company>();
 
@@ -108,17 +72,32 @@ const columns = [
 ];
 
 function CompanyPage() {
-  // Using local state for now until context/API is connected
-  const [companies] = useState<Company[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Company table!
+  const { getTableData } = useDatabase();
+  const companies = getTableData("Company");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Company_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Company_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: companies,
+    data: companies, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -139,9 +118,10 @@ function CompanyPage() {
         search: { id: companyId, tableName: "Company" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -223,9 +203,7 @@ function CompanyPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"

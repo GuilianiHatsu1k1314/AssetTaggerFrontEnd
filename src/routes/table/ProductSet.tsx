@@ -11,36 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type ProductSet, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/ProductSet")({
   component: ProductSetPage,
 });
-
-// 1. DATA TYPES BASED ON ProductSet.sql SCHEMA
-interface ProductSet {
-  parentProductId: string; // UNIQUEIDENTIFIER (PK/FK)
-  productId: string; // UNIQUEIDENTIFIER (PK/FK)
-  productSetInsertDate: string; // DATETIME
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: ProductSet[] = [
-  {
-    parentProductId: "PRD-WS-9000", // e.g., A Workstation Bundle
-    productId: "PRD-MON-24", // e.g., 24-inch Monitor
-    productSetInsertDate: "02/01/2026",
-  },
-  {
-    parentProductId: "PRD-WS-9000", // e.g., A Workstation Bundle
-    productId: "PRD-KB-101", // e.g., Standard Keyboard
-    productSetInsertDate: "02/01/2026",
-  },
-  {
-    parentProductId: "PRD-SRV-500", // e.g., Server Rack Bundle
-    productId: "PRD-UPS-2000", // e.g., Backup Power Supply
-    productSetInsertDate: "03/10/2026",
-  },
-];
 
 const columnHelper = createColumnHelper<ProductSet>();
 
@@ -70,17 +46,32 @@ const columns = [
 ];
 
 function ProductSetPage() {
-  // Using local state for now until context/API is connected
-  const [productSets] = useState<ProductSet[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the ProductSet table!
+  const { getTableData } = useDatabase();
+  const productSets = getTableData("ProductSet");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("ProductSet_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("ProductSet_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: productSets,
+    data: productSets, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -95,15 +86,16 @@ function ProductSetPage() {
     },
   });
 
-  const handleRowClick = (parentProductId: string, productId: string) => {
+  const handleRowClick = (parentProductId: string) => {
     if (isEditMode) {
       navigate({
         search: { id: parentProductId, tableName: "ProductSet" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -160,7 +152,7 @@ function ProductSetPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=ProductSet`}
+              to={`/AddValue?tableName=ProductSet`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -185,9 +177,7 @@ function ProductSetPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"
@@ -239,7 +229,7 @@ function ProductSetPage() {
                   </div>
                   <SortMenuItem
                     columnId="parentProductId"
-                    label="Parent ID"
+                    label="Parent ID (A-Z)"
                     table={table}
                   />
                   <SortMenuItem
@@ -291,10 +281,7 @@ function ProductSetPage() {
                     }`}
                     key={row.id}
                     onClick={() => {
-                      handleRowClick(
-                        row.original.parentProductId,
-                        row.original.productId,
-                      );
+                      handleRowClick(row.original.parentProductId);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

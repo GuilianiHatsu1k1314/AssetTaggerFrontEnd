@@ -11,46 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { useDatabase, type Vendor } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Vendor")({
   component: VendorPage,
 });
-
-// 1. DATA TYPES BASED ON Vendor.sql SCHEMA
-interface Vendor {
-  vendorAddress: string; // NVARCHAR(4000)
-  vendorId: string; // UNIQUEIDENTIFIER (PK)
-  vendorInsertDate: string; // DATETIME
-  vendorName: string; // NVARCHAR(4000)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Vendor[] = [
-  {
-    vendorAddress: "123 Silicon Way, Makati City, Metro Manila",
-    vendorId: "VND-1001",
-    vendorInsertDate: "01/10/2026",
-    vendorName: "TechSource Solutions",
-  },
-  {
-    vendorAddress: "45 Business Park Dr, Quezon City",
-    vendorId: "VND-1002",
-    vendorInsertDate: "01/15/2026",
-    vendorName: "OfficeMax Supplies",
-  },
-  {
-    vendorAddress: "Suite 400, Enterprise Tower, BGC",
-    vendorId: "VND-1003",
-    vendorInsertDate: "02/20/2026",
-    vendorName: "Global IT Distributors",
-  },
-  {
-    vendorAddress: "88 Industrial Avenue, Mandaue City",
-    vendorId: "VND-1004",
-    vendorInsertDate: "03/05/2026",
-    vendorName: "Furniture World Inc.",
-  },
-];
 
 const columnHelper = createColumnHelper<Vendor>();
 
@@ -115,17 +81,32 @@ function SortMenuItem({
 }
 
 function VendorPage() {
-  // Using local state for now until context/API is connected
-  const [vendors] = useState<Vendor[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Vendor table!
+  const { getTableData } = useDatabase();
+  const vendors = getTableData("Vendor");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Vendor_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Vendor_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: vendors,
+    data: vendors, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -146,7 +127,7 @@ function VendorPage() {
         search: { id: vendorId, tableName: "Vendor" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
 
@@ -206,7 +187,7 @@ function VendorPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Vendor`}
+              to={`/AddValue?tableName=Vendor`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -231,9 +212,7 @@ function VendorPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"
@@ -304,7 +283,7 @@ function VendorPage() {
           className={`mx-auto w-full max-w-6xl overflow-hidden rounded-xl border bg-white shadow-sm transition-all ${isEditMode ? "border-yellow-400 ring-4 ring-yellow-400/20" : "border-gray-200"}`}
         >
           <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[800px] table-auto text-left text-sm">
+            <table className="w-full min-w-[700px] table-auto text-left text-sm">
               <thead className="border-b border-gray-200 bg-gray-50">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>

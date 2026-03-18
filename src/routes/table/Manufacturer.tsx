@@ -11,41 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Manufacturer, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Manufacturer")({
   component: ManufacturerPage,
 });
-
-// 1. DATA TYPES BASED ON Manufacturer.sql SCHEMA
-interface Manufacturer {
-  manufacturerId: string; // UNIQUEIDENTIFIER (PK)
-  manufacturerInsertDate: string; // DATETIME
-  manufacturerName: string; // NVARCHAR(4000)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Manufacturer[] = [
-  {
-    manufacturerId: "MFG-8001",
-    manufacturerInsertDate: "01/10/2026",
-    manufacturerName: "Dell Technologies",
-  },
-  {
-    manufacturerId: "MFG-8002",
-    manufacturerInsertDate: "01/12/2026",
-    manufacturerName: "HP Enterprise",
-  },
-  {
-    manufacturerId: "MFG-8003",
-    manufacturerInsertDate: "02/05/2026",
-    manufacturerName: "Lenovo",
-  },
-  {
-    manufacturerId: "MFG-8004",
-    manufacturerInsertDate: "03/01/2026",
-    manufacturerName: "Cisco Systems",
-  },
-];
 
 const columnHelper = createColumnHelper<Manufacturer>();
 
@@ -73,17 +44,32 @@ const columns = [
 ];
 
 function ManufacturerPage() {
-  // Using local state for now until context/API is connected
-  const [manufacturers] = useState<Manufacturer[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Manufacturer table!
+  const { getTableData } = useDatabase();
+  const manufacturers = getTableData("Manufacturer");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Manufacturer_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Manufacturer_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: manufacturers,
+    data: manufacturers, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -104,9 +90,10 @@ function ManufacturerPage() {
         search: { id: manufacturerId, tableName: "Manufacturer" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -163,7 +150,7 @@ function ManufacturerPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Manufacturer`}
+              to={`/AddValue?tableName=Manufacturer`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -188,9 +175,7 @@ function ManufacturerPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"
@@ -313,8 +298,8 @@ function ManufacturerPage() {
                       className="px-6 py-12 text-center text-gray-500"
                       colSpan={columns.length}
                     >
-                      No manufacturers found. Click "Add Manufacturer" to
-                      register one.
+                      No manufacturers found. Click "Add Manufacturer" to log
+                      one.
                     </td>
                   </tr>
                 )}

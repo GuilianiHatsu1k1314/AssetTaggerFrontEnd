@@ -11,7 +11,6 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
-// 1. Pointing to the new universal Database Context
 import { type Category, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Category")({
@@ -150,7 +149,7 @@ function CategoryPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Category`}
+              to="/AddValue?tableName=Category" // <-- FIX: Added the tableName parameter!
             >
               <svg
                 fill="none"
@@ -175,7 +174,7 @@ function CategoryPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={toggleEditMode} // <-- Using the new sticky toggle here!
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"

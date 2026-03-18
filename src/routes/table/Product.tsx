@@ -11,56 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Product, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Product")({
   component: ProductPage,
 });
-
-// 1. DATA TYPES BASED ON Product.sql SCHEMA
-interface Product {
-  categoryId: string; // UNIQUEIDENTIFIER NOT NULL (FK)
-  manufacturerId: null | string; // UNIQUEIDENTIFIER NULL (FK)
-  productId: string; // UNIQUEIDENTIFIER (PK)
-  productInsertDate: string; // DATETIME NOT NULL
-  productModelNumber: null | string; // NVARCHAR(4000) NULL
-  productName: null | string; // NVARCHAR(4000) NULL
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Product[] = [
-  {
-    categoryId: "CAT-1001", // e.g., Laptops
-    manufacturerId: "MFG-8001", // e.g., Dell
-    productId: "PRD-1001",
-    productInsertDate: "01/15/2026",
-    productModelNumber: "L7420-vPro",
-    productName: "Latitude 7420",
-  },
-  {
-    categoryId: "CAT-1001",
-    manufacturerId: "MFG-8003", // e.g., Lenovo
-    productId: "PRD-1002",
-    productInsertDate: "02/10/2026",
-    productModelNumber: "TP-X1G10",
-    productName: "ThinkPad X1 Carbon Gen 10",
-  },
-  {
-    categoryId: "CAT-1003", // e.g., Networking
-    manufacturerId: "MFG-8004", // e.g., Cisco
-    productId: "PRD-1003",
-    productInsertDate: "02/20/2026",
-    productModelNumber: "C9300-48P",
-    productName: "Catalyst 9300 Series Switch",
-  },
-  {
-    categoryId: "CAT-1002", // e.g., Furniture
-    manufacturerId: null, // Nullable in SQL
-    productId: "PRD-1004",
-    productInsertDate: "03/05/2026",
-    productModelNumber: null, // Nullable in SQL
-    productName: "Generic Office Desk Chair",
-  },
-];
 
 const columnHelper = createColumnHelper<Product>();
 
@@ -123,17 +79,32 @@ const columns = [
 ];
 
 function ProductPage() {
-  // Using local state for now until context/API is connected
-  const [products] = useState<Product[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Product table!
+  const { getTableData } = useDatabase();
+  const products = getTableData("Product");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Product_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Product_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: products,
+    data: products, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -154,9 +125,10 @@ function ProductPage() {
         search: { id: productId, tableName: "Product" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -213,7 +185,7 @@ function ProductPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Product`}
+              to={`/AddValue?tableName=Product`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -238,9 +210,7 @@ function ProductPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle
             >
               <svg
                 fill="none"

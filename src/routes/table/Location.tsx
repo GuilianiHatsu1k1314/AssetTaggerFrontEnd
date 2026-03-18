@@ -11,46 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Location, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Location")({
   component: LocationPage,
 });
-
-// 1. DATA TYPES BASED ON Location.sql SCHEMA
-interface Location {
-  buildingId: string; // UNIQUEIDENTIFIER (FK to Building)
-  locationAddress: string; // NVARCHAR(4000)
-  locationId: string; // UNIQUEIDENTIFIER (PK)
-  locationInsertDate: string; // DATETIME
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Location[] = [
-  {
-    buildingId: "BLD-5001",
-    locationAddress: "2nd Floor, Server Room Alpha",
-    locationId: "LOC-001A",
-    locationInsertDate: "01/15/2026",
-  },
-  {
-    buildingId: "BLD-5001",
-    locationAddress: "Ground Floor, Main Reception Desk",
-    locationId: "LOC-002B",
-    locationInsertDate: "02/10/2026",
-  },
-  {
-    buildingId: "BLD-5003",
-    locationAddress: "Storage Unit 4, Section B",
-    locationId: "LOC-003C",
-    locationInsertDate: "03/05/2026",
-  },
-  {
-    buildingId: "BLD-5002",
-    locationAddress: "3rd Floor, Executive Boardroom",
-    locationId: "LOC-004D",
-    locationInsertDate: "03/12/2026",
-  },
-];
 
 const columnHelper = createColumnHelper<Location>();
 
@@ -84,17 +50,32 @@ const columns = [
 ];
 
 function LocationPage() {
-  // Using local state for now until context/API is connected
-  const [locations] = useState<Location[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Location table!
+  const { getTableData } = useDatabase();
+  const locations = getTableData("Location");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Location_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Location_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: locations,
+    data: locations, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -115,9 +96,10 @@ function LocationPage() {
         search: { id: locationId, tableName: "Location" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -174,7 +156,7 @@ function LocationPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Location`}
+              to={`/AddValue?tableName=Location`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -199,9 +181,7 @@ function LocationPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle
             >
               <svg
                 fill="none"

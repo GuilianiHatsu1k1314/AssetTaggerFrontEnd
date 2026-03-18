@@ -11,41 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Department, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Department")({
   component: DepartmentPage,
 });
-
-// 1. DATA TYPES BASED ON Department.sql SCHEMA
-interface Department {
-  departmentId: string; // UNIQUEIDENTIFIER (PK)
-  departmentInsertDate: string; // DATETIME
-  departmentName: string; // NVARCHAR(4000)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Department[] = [
-  {
-    departmentId: "DEPT-1001",
-    departmentInsertDate: "01/10/2026",
-    departmentName: "Information Technology",
-  },
-  {
-    departmentId: "DEPT-1002",
-    departmentInsertDate: "01/12/2026",
-    departmentName: "Human Resources",
-  },
-  {
-    departmentId: "DEPT-1003",
-    departmentInsertDate: "02/05/2026",
-    departmentName: "Finance & Accounting",
-  },
-  {
-    departmentId: "DEPT-1004",
-    departmentInsertDate: "03/01/2026",
-    departmentName: "Operations & Logistics",
-  },
-];
 
 const columnHelper = createColumnHelper<Department>();
 
@@ -73,17 +44,32 @@ const columns = [
 ];
 
 function DepartmentPage() {
-  // Using local state for now until context/API is connected
-  const [departments] = useState<Department[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Department table!
+  const { getTableData } = useDatabase();
+  const departments = getTableData("Department");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Department_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Department_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: departments,
+    data: departments, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -104,9 +90,10 @@ function DepartmentPage() {
         search: { id: departmentId, tableName: "Department" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -163,7 +150,7 @@ function DepartmentPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Department`}
+              to={`/AddValue?tableName=Department`} // <-- Updated to pass the table name!
             >
               <svg
                 fill="none"
@@ -188,9 +175,7 @@ function DepartmentPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"

@@ -11,41 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type Role, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/Role")({
   component: RolePage,
 });
-
-// 1. DATA TYPES BASED ON Role.sql SCHEMA
-interface Role {
-  roleId: string; // UNIQUEIDENTIFIER (PK)
-  roleInsertDate: string; // DATETIME
-  roleName: string; // NVARCHAR(4000)
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: Role[] = [
-  {
-    roleId: "ROLE-1001",
-    roleInsertDate: "01/10/2026",
-    roleName: "System Administrator",
-  },
-  {
-    roleId: "ROLE-1002",
-    roleInsertDate: "01/12/2026",
-    roleName: "IT Support Specialist",
-  },
-  {
-    roleId: "ROLE-1003",
-    roleInsertDate: "02/05/2026",
-    roleName: "Department Manager",
-  },
-  {
-    roleId: "ROLE-1004",
-    roleInsertDate: "03/01/2026",
-    roleName: "Standard Employee",
-  },
-];
 
 const columnHelper = createColumnHelper<Role>();
 
@@ -73,17 +44,32 @@ const columns = [
 ];
 
 function RolePage() {
-  // Using local state for now until context/API is connected
-  const [roles] = useState<Role[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the Role table!
+  const { getTableData } = useDatabase();
+  const roles = getTableData("Role");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("Role_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("Role_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: roles,
+    data: roles, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -104,9 +90,10 @@ function RolePage() {
         search: { id: roleId, tableName: "Role" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -163,7 +150,7 @@ function RolePage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=Role`}
+              to={`/AddValue?tableName=Role`} // <-- Correct table parameter added
             >
               <svg
                 fill="none"
@@ -188,9 +175,7 @@ function RolePage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle here!
             >
               <svg
                 fill="none"

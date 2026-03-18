@@ -11,45 +11,12 @@ import {
 import { useState } from "react";
 
 import { Sidebar } from "../components/-SideBar";
+// 1. Pointing to the new universal Database Context
+import { type EndUser, useDatabase } from "../context/-AssetContext";
 
 export const Route = createFileRoute("/table/EndUser")({
   component: EndUserPage,
 });
-
-// 1. DATA TYPES BASED ON EndUser.sql SCHEMA
-interface EndUser {
-  employeeId: string; // UNIQUEIDENTIFIER (FK to Employee)
-  endUserId: string; // UNIQUEIDENTIFIER (PK)
-  endUserName: string; // NVARCHAR(4000) (Username - No whitespace allowed)
-  endUserRegisterDate: string; // DATETIME
-  endUserRoleId: string; // UNIQUEIDENTIFIER (FK to EndUserRole)
-  // Note: EndUserPasswordHash is deliberately excluded from UI display for security
-}
-
-// Dummy data to populate the table for testing UI
-const mockData: EndUser[] = [
-  {
-    employeeId: "EMP-045",
-    endUserId: "USR-A101",
-    endUserName: "jdelacruz",
-    endUserRegisterDate: "01/15/2026",
-    endUserRoleId: "ROLE-ADMIN",
-  },
-  {
-    employeeId: "EMP-088",
-    endUserId: "USR-A102",
-    endUserName: "msantos",
-    endUserRegisterDate: "02/10/2026",
-    endUserRoleId: "ROLE-STANDARD",
-  },
-  {
-    employeeId: "EMP-112",
-    endUserId: "USR-A103",
-    endUserName: "rreyes_tech",
-    endUserRegisterDate: "03/05/2026",
-    endUserRoleId: "ROLE-MANAGER",
-  },
-];
 
 const columnHelper = createColumnHelper<EndUser>();
 
@@ -89,17 +56,32 @@ const columns = [
 ];
 
 function EndUserPage() {
-  // Using local state for now until context/API is connected
-  const [users] = useState<EndUser[]>(mockData);
   const navigate = useNavigate();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  // 3. Get live data specifically for the EndUser table!
+  const { getTableData } = useDatabase();
+  const users = getTableData("EndUser");
+
+  // ==========================================
+  // STICKY EDIT MODE LOGIC
+  // ==========================================
+  const [isEditMode, setIsEditMode] = useState(() => {
+    return sessionStorage.getItem("EndUser_isEditMode") === "true";
+  });
+
+  const toggleEditMode = () => {
+    const newValue = !isEditMode;
+    setIsEditMode(newValue);
+    sessionStorage.setItem("EndUser_isEditMode", String(newValue));
+  };
+  // ==========================================
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     columns,
-    data: users,
+    data: users, // <-- Using the live context data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -120,9 +102,10 @@ function EndUserPage() {
         search: { id: endUserId, tableName: "EndUser" },
         to: "/EditValue" as any,
       });
-      setIsEditMode(false);
+      // setIsEditMode(false) removed so Edit Mode stays ON
     }
   };
+
   return (
     <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
       <Sidebar />
@@ -179,7 +162,7 @@ function EndUserPage() {
             {/* Add Button */}
             <Link
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=EndUser`}
+              to={`/AddValue?tableName=EndUser`} // <-- Properly passing the table name
             >
               <svg
                 fill="none"
@@ -204,9 +187,7 @@ function EndUserPage() {
                   ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
                   : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
-              onClick={() => {
-                setIsEditMode(!isEditMode);
-              }}
+              onClick={toggleEditMode} // <-- Using the sticky toggle
             >
               <svg
                 fill="none"
