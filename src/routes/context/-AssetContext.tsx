@@ -76,6 +76,14 @@ export interface Department {
   departmentInsertDate: string;
   departmentName: string;
 }
+export interface Employee {
+  companyId: string;
+  departmentId: string;
+  employeeFullName: string;
+  employeeId: string;
+  employeeInsertDate: string;
+  roleId: string;
+}
 export interface EndUser {
   employeeId: string;
   endUserId: string;
