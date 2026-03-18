@@ -3,7 +3,8 @@ import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { useState } from "react";
 
 import { Sidebar } from "./components/-SideBar";
-import { useAssetContext } from "./context/-AssetContext"; // <-- 1. Imported context
+// 1. Correctly import the hook, not the Provider component
+import { useDatabase } from "./context/-AssetContext";
 
 export const Route = createFileRoute("/ScanQR")({
   component: ScanQRPage,
@@ -11,7 +12,10 @@ export const Route = createFileRoute("/ScanQR")({
 
 function ScanQRPage() {
   const navigate = useNavigate();
-  const { assets } = useAssetContext(); // <-- 2. Pull in the Asset table data
+
+  // 2. Correctly pull in the Asset table data using the hook
+  const { getTableData } = useDatabase();
+  const assets = getTableData("Asset");
 
   const [isPaused, setIsPaused] = useState(false);
   const [scannedId, setScannedId] = useState<null | string>(null);
