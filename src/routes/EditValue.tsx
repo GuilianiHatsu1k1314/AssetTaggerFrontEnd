@@ -98,6 +98,11 @@ const tableConfigs: Record<string, any[]> = {
     { key: "buildingAddress", label: "Address", type: "text" },
     { key: "buildingInsertDate", label: "Date Added", type: "date" },
   ],
+  Category: [
+    { isReadOnly: true, key: "categoryId", label: "Category ID" },
+    { key: "categoryName", label: "Category Name", type: "text" },
+    { key: "categoryInsertDate", label: "Date Added", type: "date" },
+  ],
   Company: [
     { isReadOnly: true, key: "companyId", label: "Company ID" },
     { key: "companyCode", label: "Company Code", type: "text" },
@@ -109,6 +114,14 @@ const tableConfigs: Record<string, any[]> = {
     { isReadOnly: true, key: "departmentId", label: "Department ID" },
     { key: "departmentName", label: "Department Name", type: "text" },
     { key: "departmentInsertDate", label: "Date Added", type: "date" },
+  ],
+  Employee: [
+    { isReadOnly: true, key: "employeeId", label: "Employee ID" },
+    { key: "employeeFullName", label: "Full Name", type: "text" },
+    { key: "roleId", label: "Role ID", type: "text" },
+    { key: "companyId", label: "Company ID", type: "text" },
+    { key: "departmentId", label: "Department ID", type: "text" },
+    { key: "employeeInsertDate", label: "Date Added", type: "date" },
   ],
   EndUser: [
     { isReadOnly: true, key: "endUserId", label: "User ID" },
@@ -153,7 +166,6 @@ const tableConfigs: Record<string, any[]> = {
     { key: "vendorInsertDate", label: "Date Added", type: "date" },
   ],
 };
-
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
