@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { ProtectedRoute } from "../components/ProtectedRoute"; // 1. IMPORT ADDED HERE
+import { ProtectedRoute } from "./components/-ProtectedRoute"; // 1. IMPORT ADDED HERE
 import { Sidebar } from "./components/-SideBar"; // Ensure this path matches your project structure
 
 export const Route = createFileRoute("/TableSelection")({
