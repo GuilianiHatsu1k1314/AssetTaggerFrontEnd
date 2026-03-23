@@ -1,15 +1,33 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+
+// Make sure this path is correct based on where your Sidebar is located!
+import { useDatabase } from "../context/-AssetContext";
 
 import JDNLogo from "/jdnlogowhite.png";
 
 export function Sidebar() {
+  const navigate = useNavigate();
+  const { logoutUser } = useDatabase();
+
   // Check if the user logged in as an admin
-  // (In a real app, you would use React Context or a global state manager for this)
   const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-  const handleLogout = () => {
-    // Clear the admin status when logging out
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    // 1. You may need to retrieve the user's ID here if your backend requires it
+    // Example: const currentUserId = localStorage.getItem("currentUserId") || "";
+    const currentUserId = "";
+
+    // 2. Call the API to destroy the httpOnly cookie and clear the Context state
+    await logoutUser(currentUserId);
+
+    // 3. Clear local storage flags
     localStorage.removeItem("isAdmin");
+    localStorage.removeItem("currentUser");
+
+    // 4. Safely redirect back to the Login page AFTER the API is done
+    navigate({ to: "/" });
   };
 
   return (
@@ -18,8 +36,8 @@ export function Sidebar() {
       <div className="sticky top-0 hidden h-screen w-32 shrink-0 flex-col items-center overflow-hidden bg-[#0031AB] py-10 text-white shadow-2xl md:flex">
         <div className="mb-14">
           <img alt="Logo" className="h-10 w-auto" src={JDNLogo} />
-        </div>{" "}
-        {/* <--- FIX: Added this missing closing div! */}
+        </div>
+
         <nav className="flex w-full flex-col gap-8 text-center">
           <Link
             className="text-xl font-medium transition-colors hover:text-blue-200"
@@ -50,28 +68,29 @@ export function Sidebar() {
             </Link>
           )}
         </nav>
+
         <div className="mt-auto">
-          <Link onClick={handleLogout} to="/">
-            <button
-              className="group flex items-center text-black transition-colors hover:text-white"
-              title="Logout"
+          {/* FIX: Removed the <Link> wrapper and applied the handler directly to the button */}
+          <button
+            className="group flex items-center text-black transition-colors hover:text-white"
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <svg
+              fill="none"
+              height="32"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+              width="32"
             >
-              <svg
-                fill="none"
-                height="32"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2.5"
-                viewBox="0 0 24 24"
-                width="32"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-            </button>
-          </Link>
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -79,7 +98,7 @@ export function Sidebar() {
       <div className="fixed right-0 bottom-0 left-0 z-50 flex h-20 items-center justify-between border-t border-gray-300 bg-white px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden">
         <Link
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
-          to="/"
+          to="/LandingPage" // Adjusted this to point to the dashboard instead of the login page
         >
           <svg
             fill="none"
@@ -89,29 +108,10 @@ export function Sidebar() {
             viewBox="0 0 24 24"
             width="24"
           >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span className="text-[10px] font-medium">Home</span>
-        </Link>
-
-        <Link
-          className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
-          to="/LandingPage"
-        >
-          <svg
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width="24"
-          >
-            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-          </svg>
-          <span className="text-[10px] font-medium">Dashboard</span>
         </Link>
 
         {/* Center Camera Icon (Elevated) */}
@@ -159,7 +159,7 @@ export function Sidebar() {
         {isAdmin && (
           <Link
             className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
-            to="/AdminPage" // FIX: Matched desktop route
+            to="/adminpages/AdminPage"
           >
             <svg
               fill="none"
@@ -177,22 +177,24 @@ export function Sidebar() {
           </Link>
         )}
 
-        <Link onClick={handleLogout} to="/">
-          <button className="flex flex-col items-center gap-1 text-black hover:text-blue-600">
-            <svg
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              width="24"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span className="text-[10px] font-medium">Logout</span>
-          </button>
-        </Link>
+        {/* FIX: Removed the <Link> wrapper here as well */}
+        <button
+          className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
+          onClick={handleLogout}
+        >
+          <svg
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="24"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span className="text-[10px] font-medium">Logout</span>
+        </button>
       </div>
     </>
   );

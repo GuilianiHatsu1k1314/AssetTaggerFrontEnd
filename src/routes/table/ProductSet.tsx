@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 
+import { ProtectedRoute } from "../components/-ProtectedRoute"; // 1. IMPORT ADDED HERE
 import { Sidebar } from "../components/-SideBar";
 // 1. Pointing to the new universal Database Context
 import { type ProductSet, useDatabase } from "../context/-AssetContext";
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/table/ProductSet")({
   component: ProductSetPage,
 });
 
+// FIX: Changed from Manufacturer to ProductSet to match the data type
 const columnHelper = createColumnHelper<ProductSet>();
 
 // 2. COLUMNS CONFIGURED FOR SQL SCHEMA
@@ -97,112 +99,89 @@ function ProductSetPage() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
-      <Sidebar />
+    // 2. WRAPPER ADDED HERE
+    <ProtectedRoute>
+      <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
+        <Sidebar />
 
-      <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
-        {/* Breadcrumb */}
-        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
-          <Link
-            className="hover:text-blue-600 hover:underline"
-            to="/TableSelection"
-          >
-            Table Selection
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900">Product Set Display</span>
-        </div>
-
-        {/* Toolbar */}
-        <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Product Set Table
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage product bundles, kits, and parent-child relationships.
-            </p>
+        <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
+          {/* Breadcrumb */}
+          <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
+            <Link
+              className="hover:text-blue-600 hover:underline"
+              to="/TableSelection"
+            >
+              Table Selection
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900">Product Set Display</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search Bar */}
-            <div className="relative w-full sm:w-64">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                  />
-                </svg>
-              </div>
-              <input
-                className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-10 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                placeholder="Search bundles..."
-                type="text"
-              />
+          {/* Toolbar */}
+          <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Product Set Table
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Manage product bundles, kits, and parent-child relationships.
+              </p>
             </div>
 
-            {/* Add Button */}
-            <Link
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              to={`/AddValue?tableName=ProductSet`} // <-- Correct table parameter added
-            >
-              <svg
-                fill="none"
-                height="16"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                width="16"
-              >
-                <line x1="12" x2="12" y1="5" y2="19"></line>
-                <line x1="5" x2="19" y1="12" y2="12"></line>
-              </svg>
-              Create Bundle
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-64">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                </div>
+                <input
+                  className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-3 pl-10 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Search bundles..."
+                  type="text"
+                />
+              </div>
 
-            {/* Edit Mode Toggle */}
-            <button
-              className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition-colors focus:outline-none ${
-                isEditMode
-                  ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                  : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-              onClick={toggleEditMode} // <-- Using the sticky toggle here!
-            >
-              <svg
-                fill="none"
-                height="16"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                width="16"
+              {/* Add Button */}
+              <Link
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+                to={`/AddValue?tableName=ProductSet`} // <-- Correct table parameter added
               >
-                <path
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                <svg
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
-              {isEditMode ? "Select Row to Edit" : "Edit Mode"}
-            </button>
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <line x1="12" x2="12" y1="5" y2="19"></line>
+                  <line x1="5" x2="19" y1="12" y2="12"></line>
+                </svg>
+                Create Bundle
+              </Link>
 
-            {/* SORT DROPDOWN CONTAINER */}
-            <div className="relative">
+              {/* Edit Mode Toggle */}
               <button
-                className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none"
-                onClick={() => {
-                  setIsFilterOpen(!isFilterOpen);
-                }}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition-colors focus:outline-none ${
+                  isEditMode
+                    ? "border border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                    : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+                onClick={toggleEditMode} // <-- Using the sticky toggle here!
               >
                 <svg
                   fill="none"
@@ -212,163 +191,189 @@ function ProductSetPage() {
                   width="16"
                 >
                   <path
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
                   />
                 </svg>
-                Sort & Filter
+                {isEditMode ? "Select Row to Edit" : "Edit Mode"}
               </button>
 
-              {/* DROPDOWN MENU */}
-              {isFilterOpen && (
-                <div className="absolute top-full right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-xl">
-                  <div className="px-4 py-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
-                    Sort By Column
-                  </div>
-                  <SortMenuItem
-                    columnId="parentProductId"
-                    label="Parent ID (A-Z)"
-                    table={table}
-                  />
-                  <SortMenuItem
-                    columnId="productId"
-                    label="Child ID"
-                    table={table}
-                  />
-                  <SortMenuItem
-                    columnId="productSetInsertDate"
-                    label="Date Added"
-                    table={table}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* MAIN DATA CARD */}
-        <div
-          className={`mx-auto w-full max-w-6xl overflow-hidden rounded-xl border bg-white shadow-sm transition-all ${isEditMode ? "border-yellow-400 ring-4 ring-yellow-400/20" : "border-gray-200"}`}
-        >
-          <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[700px] table-auto text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        className="px-6 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
-                        key={header.id}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    className={`transition-colors ${
-                      isEditMode
-                        ? "cursor-pointer hover:bg-yellow-50"
-                        : "hover:bg-gray-50"
-                    }`}
-                    key={row.id}
-                    onClick={() => {
-                      handleRowClick(row.original.parentProductId);
-                    }}
+              {/* SORT DROPDOWN CONTAINER */}
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none"
+                  onClick={() => {
+                    setIsFilterOpen(!isFilterOpen);
+                  }}
+                >
+                  <svg
+                    fill="none"
+                    height="16"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    width="16"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        className="px-6 py-4 align-middle whitespace-nowrap text-gray-700"
-                        key={cell.id}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                    <path
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                    />
+                  </svg>
+                  Sort & Filter
+                </button>
 
-                {/* Empty State Fallback */}
-                {table.getRowModel().rows.length === 0 && (
-                  <tr>
-                    <td
-                      className="px-6 py-12 text-center text-gray-500"
-                      colSpan={columns.length}
-                    >
-                      No product sets found. Click "Create Bundle" to link
-                      products.
-                    </td>
-                  </tr>
+                {/* DROPDOWN MENU */}
+                {isFilterOpen && (
+                  <div className="absolute top-full right-0 z-50 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-xl">
+                    <div className="px-4 py-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                      Sort By Column
+                    </div>
+                    <SortMenuItem
+                      columnId="parentProductId"
+                      label="Parent ID (A-Z)"
+                      table={table}
+                    />
+                    <SortMenuItem
+                      columnId="productId"
+                      label="Child ID"
+                      table={table}
+                    />
+                    <SortMenuItem
+                      columnId="productSetInsertDate"
+                      label="Date Added"
+                      table={table}
+                    />
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination Controls */}
-          <div className="flex flex-col items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row">
-            <div className="mb-4 flex items-center gap-2 sm:mb-0">
-              <span className="text-sm text-gray-600">Rows per page:</span>
-              <select
-                className="cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                onChange={(e) => {
-                  table.setPageSize(Number(e.target.value));
-                }}
-                value={table.getState().pagination.pageSize}
-              >
-                {[5, 10, 15, 20].map((pageSize) => (
-                  <option key={pageSize} value={pageSize}>
-                    {pageSize}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                Page{" "}
-                <span className="font-semibold text-gray-900">
-                  {table.getState().pagination.pageIndex + 1}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-gray-900">
-                  {table.getPageCount() || 1}
-                </span>
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!table.getCanPreviousPage()}
-                  onClick={() => {
-                    table.previousPage();
-                  }}
-                >
-                  Previous
-                </button>
-                <button
-                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!table.getCanNextPage()}
-                  onClick={() => {
-                    table.nextPage();
-                  }}
-                >
-                  Next
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+
+          {/* MAIN DATA CARD */}
+          <div
+            className={`mx-auto w-full max-w-6xl overflow-hidden rounded-xl border bg-white shadow-sm transition-all ${isEditMode ? "border-yellow-400 ring-4 ring-yellow-400/20" : "border-gray-200"}`}
+          >
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[700px] table-auto text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          className="px-6 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
+                          key={header.id}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {table.getRowModel().rows.map((row) => (
+                    <tr
+                      className={`transition-colors ${
+                        isEditMode
+                          ? "cursor-pointer hover:bg-yellow-50"
+                          : "hover:bg-gray-50"
+                      }`}
+                      key={row.id}
+                      onClick={() => {
+                        handleRowClick(row.original.parentProductId);
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          className="px-6 py-4 align-middle whitespace-nowrap text-gray-700"
+                          key={cell.id}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+
+                  {/* Empty State Fallback */}
+                  {table.getRowModel().rows.length === 0 && (
+                    <tr>
+                      <td
+                        className="px-6 py-12 text-center text-gray-500"
+                        colSpan={columns.length}
+                      >
+                        No product sets found. Click "Create Bundle" to link
+                        products.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-col items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row">
+              <div className="mb-4 flex items-center gap-2 sm:mb-0">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  className="cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  onChange={(e) => {
+                    table.setPageSize(Number(e.target.value));
+                  }}
+                  value={table.getState().pagination.pageSize}
+                >
+                  {[5, 10, 15, 20].map((pageSize) => (
+                    <option key={pageSize} value={pageSize}>
+                      {pageSize}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-600">
+                  Page{" "}
+                  <span className="font-semibold text-gray-900">
+                    {table.getState().pagination.pageIndex + 1}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-gray-900">
+                    {table.getPageCount() || 1}
+                  </span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!table.getCanPreviousPage()}
+                    onClick={() => {
+                      table.previousPage();
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!table.getCanNextPage()}
+                    onClick={() => {
+                      table.nextPage();
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
 

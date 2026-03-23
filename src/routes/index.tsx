@@ -1,5 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+// Make sure this path points exactly to where your Context file lives!
+import { useDatabase } from "./context/-AssetContext";
 
 import JDNLogo from "/jdnlogowhite.png";
 
@@ -9,66 +12,32 @@ export const Route = createFileRoute("/")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  // Bring in the login function from your secure API context
+  const { loginUser } = useDatabase();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
 
-  // Seed default test accounts when the login page loads
-  useEffect(() => {
-    const existingUsersString = localStorage.getItem("app_users");
-
-    if (!existingUsersString) {
-      // If the database is completely empty, create the default accounts
-      const defaultUsers = [
-        {
-          fullName: "System Admin",
-          password: "admin123",
-          role: "Admin",
-          username: "admin",
-        },
-        {
-          fullName: "Test User",
-          password: "user123",
-          role: "Standard User",
-          username: "user",
-        },
-      ];
-      localStorage.setItem("app_users", JSON.stringify(defaultUsers));
-    }
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
+    setIsLoading(true);
 
-    // 1. Fetch the "database" of users
-    const usersString = localStorage.getItem("app_users");
-    const users = usersString ? JSON.parse(usersString) : [];
+    // 1. Send credentials to your Express backend (which validates against SQL)
+    const success = await loginUser(username, password);
 
-    // 2. Find a user that matches the provided username and password
-    const matchedUser = users.find(
-      (u: any) => u.username === username && u.password === password,
-    );
-
-    // 3. If a match is found, check their role and log them in!
-    if (matchedUser) {
-      setErrorMessage("");
-
-      if (matchedUser.role === "Admin") {
-        // Set admin flag to true
-        localStorage.setItem("isAdmin", "true");
-      } else {
-        // Set admin flag to false
-        localStorage.setItem("isAdmin", "false");
-      }
-
-      // Optionally save who is currently logged in so you can display their name later
-      localStorage.setItem("currentUser", matchedUser.fullName);
-
+    // 2. If the API returns 200 OK and sets the httpOnly cookie:
+    if (success) {
+      // (Optional) If you need to store the user's role like your old local storage did,
+      // you would decode the JWT here or have your backend return it in the JSON response.
       navigate({ to: "/LandingPage" });
     } else {
       setErrorMessage("Invalid username or password. Please try again.");
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -114,10 +83,11 @@ function LoginPage() {
 
           <div className="mt-2 flex justify-end">
             <button
-              className="rounded-full bg-[#567bfb] px-8 py-2 font-medium text-white transition-all hover:bg-blue-600 focus:ring-2 focus:outline-none"
+              className="rounded-full bg-[#567bfb] px-8 py-2 font-medium text-white transition-all hover:bg-blue-600 focus:ring-2 focus:outline-none disabled:opacity-50"
+              disabled={isLoading}
               type="submit"
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </div>
         </form>

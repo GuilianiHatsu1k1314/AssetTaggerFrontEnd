@@ -166,6 +166,7 @@ const tableConfigs: Record<string, any[]> = {
     { key: "vendorInsertDate", label: "Date Added", type: "date" },
   ],
 };
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -176,10 +177,10 @@ function EditValuePage() {
   const currentTableConfig =
     tableConfigs[search.tableName] || tableConfigs.Asset;
 
-  // Pulling 'db' directly ensures we always have the latest reference
   const { db, updateRecord } = useDatabase();
 
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // 1. Get the entire table array directly from db
@@ -209,7 +210,7 @@ function EditValuePage() {
       setFormData(initialData);
     } else {
       console.warn(
-        `🚨 WARNING: Could not find ID '${search.id}' in the '${search.tableName}' table. Make sure your local storage is cleared and your table is using getTableData()!`,
+        `🚨 WARNING: Could not find ID '${search.id}' in the '${search.tableName}' table. Make sure your API is returning data!`,
       );
     }
   }, [search.id, search.tableName, db, currentTableConfig]);
@@ -221,7 +222,8 @@ function EditValuePage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSubmitting(true);
     const formattedData = { ...formData };
 
     currentTableConfig.forEach((col) => {
@@ -239,11 +241,22 @@ function EditValuePage() {
 
     const primaryKeyId = currentTableConfig[0].key;
 
-    // Dynamically update the correct table using the context
-    updateRecord(search.tableName, primaryKeyId, search.id, formattedData);
+    try {
+      // Dynamically update the correct table using the API via context
+      await updateRecord(
+        search.tableName,
+        primaryKeyId,
+        search.id,
+        formattedData,
+      );
 
-    alert(`${search.tableName} updated successfully!`);
-    navigate({ to: `/table/${search.tableName}` });
+      alert(`${search.tableName} updated successfully!`);
+      navigate({ to: `/table/${search.tableName}` });
+    } catch (error) {
+      alert("Failed to update record. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -375,24 +388,53 @@ function EditValuePage() {
 
           <div className="mt-8 flex justify-end">
             <button
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSubmitting}
               onClick={handleSave}
             >
-              <svg
-                fill="none"
-                height="20"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                width="20"
-              >
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
-              </svg>
-              Save Changes
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 animate-spin text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <svg
+                    fill="none"
+                    height="20"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width="20"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Save Changes
+                </span>
+              )}
             </button>
           </div>
         </div>

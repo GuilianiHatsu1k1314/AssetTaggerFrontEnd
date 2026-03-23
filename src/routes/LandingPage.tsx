@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { ProtectedRoute } from "./components/-ProtectedRoute";
 import { Sidebar } from "./components/-SideBar"; // Ensure this path matches your project structure
+//import { Dashboard } from "./components/Dashboard"; // <-- Don't forget to import this if it lives in another file!
 
 // 1. Single Route Definition
 export const Route = createFileRoute("/LandingPage")({
@@ -10,16 +12,19 @@ export const Route = createFileRoute("/LandingPage")({
 // 2. The Main Page Layout (Sidebar + Dashboard)
 function LandingPage() {
   return (
-    // Flex Container: Sidebar on Left, Content on Right
-    <div className="flex h-screen w-full bg-gray-50">
-      {/* Sidebar (Fixed Width) */}
-      <Sidebar />
+    // SECURITY GUARD: Wraps the entire page to prevent access if logged out
+    <ProtectedRoute>
+      {/* Flex Container: Sidebar on Left, Content on Right */}
+      <div className="flex h-screen w-full bg-gray-50">
+        {/* Sidebar (Fixed Width) */}
+        <Sidebar />
 
-      {/* Main Content Area (Scrollable) */}
-      <main className="flex-1 overflow-y-auto p-8">
-        <Dashboard />
-      </main>
-    </div>
+        {/* Main Content Area (Scrollable) */}
+        <main className="flex-1 overflow-y-auto p-8">
+          <Dashboard />
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
 

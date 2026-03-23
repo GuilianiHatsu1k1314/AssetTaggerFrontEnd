@@ -6,15 +6,16 @@ import {
 } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { ProtectedRoute } from "./components/-ProtectedRoute";
 import { Sidebar } from "./components/-SideBar";
-import { useDatabase } from "./context/-AssetContext"; // Updated Context
+import { useDatabase } from "./context/-AssetContext";
 
 // 1. Require tableName in the search params
 export const Route = createFileRoute("/AddValue")({
   component: AddValuePage,
   validateSearch: (search: Record<string, unknown>) => {
     return {
-      tableName: (search.tableName as string) || "Asset", // Default to Asset if missing
+      tableName: (search.tableName as string) || "Asset",
     };
   },
 });
@@ -163,7 +164,6 @@ function AddValuePage() {
   const search = useSearch({ from: "/AddValue" });
   const { addRecord } = useDatabase();
 
-  // Determine which configuration to use based on the URL
   const currentTableConfig =
     tableConfigs[search.tableName] || tableConfigs.Asset;
 
@@ -176,6 +176,7 @@ function AddValuePage() {
   };
 
   const [rows, setRows] = useState([getBlankRow()]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (index: number, field: string, value: string) => {
     const updatedRows = [...rows];
@@ -187,7 +188,7 @@ function AddValuePage() {
     setRows([...rows, getBlankRow()]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let isValid = true;
 
     // Simple Validation: Ensure non-readonly fields aren't completely empty
@@ -213,226 +214,276 @@ function AddValuePage() {
       return;
     }
 
-    // Process and Save Data
-    rows.forEach((row) => {
-      const formattedRow: Record<string, any> = { ...row };
+    setIsSubmitting(true);
 
-      currentTableConfig.forEach((col) => {
-        // 1. Generate Fake ID for the primary key column (usually the read-only one)
-        if (col.isReadOnly) {
-          formattedRow[col.key] = `NEW-${Math.floor(Math.random() * 10000)}`;
-        }
-        // 2. Format Dates
-        else if (col.type === "date") {
-          formattedRow[col.key] = formatToUSDate(String(row[col.key]));
-        }
-        // 3. Format Numbers
-        else if (col.type === "number") {
-          formattedRow[col.key] = Number(row[col.key]) || 0;
-        }
-        // 4. Format Booleans (for AssetFix)
-        else if (col.key === "assetFixed") {
-          formattedRow[col.key] = row[col.key] === "true";
-        }
-      });
+    try {
+      // Process and Save Data Concurrently
+      await Promise.all(
+        rows.map(async (row) => {
+          const formattedRow: Record<string, any> = { ...row };
 
-      // Insert into the global database context!
-      addRecord(search.tableName, formattedRow);
-    });
+          currentTableConfig.forEach((col) => {
+            // 1. DELETE AUTO-GENERATED IDs: The SQL backend uses NEWID()
+            // so we don't want to send fake IDs anymore!
+            if (col.isReadOnly) {
+              delete formattedRow[col.key];
+            }
+            // 2. Format Dates
+            else if (col.type === "date") {
+              formattedRow[col.key] = formatToUSDate(String(row[col.key]));
+            }
+            // 3. Format Numbers
+            else if (col.type === "number") {
+              formattedRow[col.key] = Number(row[col.key]) || 0;
+            }
+            // 4. Format Booleans
+            else if (col.key === "assetFixed") {
+              formattedRow[col.key] = row[col.key] === "true";
+            }
+          });
 
-    alert(`Successfully added ${rows.length} new ${search.tableName}(s)!`);
-    navigate({ to: `/table/${search.tableName}` });
+          // Insert into the global database context (API Call)
+          await addRecord(search.tableName, formattedRow);
+        }),
+      );
+
+      alert(`Successfully added ${rows.length} new ${search.tableName}(s)!`);
+      navigate({ to: `/table/${search.tableName}` });
+    } catch (error) {
+      alert("An error occurred while saving. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
-      <Sidebar />
+    // 2. WRAPPER ADDED HERE
+    <ProtectedRoute>
+      <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
+        <Sidebar />
 
-      <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
-        {/* Breadcrumbs */}
-        <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
-          <Link
-            className="hover:text-blue-600 hover:underline"
-            to="/TableSelection"
-          >
-            Table Selection
-          </Link>
-          <span>/</span>
-          <Link
-            className="hover:text-blue-600 hover:underline"
-            to={`/table/${search.tableName}`}
-          >
-            {search.tableName} Display
-          </Link>
-          <span>/</span>
-          <span className="text-gray-900">Add New Value</span>
-        </div>
-
-        {/* Header Section with Back Button */}
-        <div className="mb-8 flex items-center gap-4">
-          <button
-            className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            onClick={() => {
-              window.history.back();
-            }}
-          >
-            <svg
-              className="md:h-8 md:w-8"
-              fill="none"
-              height="28"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-              viewBox="0 0 24 24"
-              width="28"
+        <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8">
+          {/* Breadcrumbs */}
+          <div className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-500 md:text-base">
+            <Link
+              className="hover:text-blue-600 hover:underline"
+              to="/TableSelection"
             >
-              <line x1="19" x2="5" y1="12" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Add New {search.tableName}s
-            </h1>
-            <p className="mt-1 text-sm text-gray-500 md:text-base">
-              Fill out the rows below to register new{" "}
-              {search.tableName.toLowerCase()}s into the system.
-            </p>
-          </div>
-        </div>
-
-        {/* Dynamic Input Table Card */}
-        <div className="w-full max-w-[1400px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] table-auto text-left text-sm">
-              {/* Table Header */}
-              <thead className="border-b border-gray-200 bg-gray-50">
-                <tr>
-                  {currentTableConfig.map((col) => (
-                    <th
-                      className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
-                      key={col.key}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              {/* Table Body (Input Rows) */}
-              <tbody className="divide-y divide-gray-100 bg-white">
-                {rows.map((row, index) => (
-                  <tr
-                    className="transition-colors hover:bg-gray-50"
-                    key={index}
-                  >
-                    {currentTableConfig.map((col) => {
-                      // 1. READ ONLY FIELDS (Auto-Generated IDs)
-                      if (col.isReadOnly) {
-                        return (
-                          <td className="px-4 py-3 align-middle" key={col.key}>
-                            <div className="flex w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400">
-                              (Auto)
-                            </div>
-                          </td>
-                        );
-                      }
-
-                      // 2. DROPDOWN FIELDS
-                      if (col.options) {
-                        return (
-                          <td className="px-4 py-3 align-middle" key={col.key}>
-                            <select
-                              className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                              onChange={(e) => {
-                                handleChange(index, col.key, e.target.value);
-                              }}
-                              value={row[col.key]}
-                            >
-                              <option disabled value="">
-                                -- Select --
-                              </option>
-                              {col.options.map((opt: any) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                        );
-                      }
-
-                      // 3. DATE AND NUMBER FIELDS
-                      return (
-                        <td className="px-4 py-3 align-middle" key={col.key}>
-                          <input
-                            className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                            onChange={(e) => {
-                              handleChange(index, col.key, e.target.value);
-                            }}
-                            placeholder={`Enter ${col.label}...`}
-                            type={col.type || "text"}
-                            value={row[col.key]}
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              Table Selection
+            </Link>
+            <span>/</span>
+            <Link
+              className="hover:text-blue-600 hover:underline"
+              to={`/table/${search.tableName}`}
+            >
+              {search.tableName} Display
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900">Add New Value</span>
           </div>
 
-          {/* Add Row Button */}
-          <div className="border-t border-gray-200 bg-gray-50 p-4">
+          {/* Header Section with Back Button */}
+          <div className="mb-8 flex items-center gap-4">
             <button
-              className="group flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none"
-              onClick={handleAddRow}
+              className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-gray-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              onClick={() => {
+                window.history.back();
+              }}
             >
               <svg
-                className="transition-transform group-hover:scale-110"
+                className="md:h-8 md:w-8"
                 fill="none"
-                height="20"
+                height="28"
                 stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 viewBox="0 0 24 24"
-                width="20"
+                width="28"
               >
-                <line x1="12" x2="12" y1="5" y2="19"></line>
-                <line x1="5" x2="19" y1="12" y2="12"></line>
+                <line x1="19" x2="5" y1="12" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
               </svg>
-              Add Another Row
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Add New {search.tableName}s
+              </h1>
+              <p className="mt-1 text-sm text-gray-500 md:text-base">
+                Fill out the rows below to register new{" "}
+                {search.tableName.toLowerCase()}s into the system.
+              </p>
+            </div>
+          </div>
+
+          {/* Dynamic Input Table Card */}
+          <div className="w-full max-w-[1400px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1000px] table-auto text-left text-sm">
+                {/* Table Header */}
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    {currentTableConfig.map((col) => (
+                      <th
+                        className="px-4 py-4 align-middle text-xs font-bold tracking-wider text-gray-500 uppercase"
+                        key={col.key}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                {/* Table Body (Input Rows) */}
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {rows.map((row, index) => (
+                    <tr
+                      className="transition-colors hover:bg-gray-50"
+                      key={index}
+                    >
+                      {currentTableConfig.map((col) => {
+                        // 1. READ ONLY FIELDS (Auto-Generated IDs)
+                        if (col.isReadOnly) {
+                          return (
+                            <td
+                              className="px-4 py-3 align-middle"
+                              key={col.key}
+                            >
+                              <div className="flex w-full items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400">
+                                (Auto)
+                              </div>
+                            </td>
+                          );
+                        }
+
+                        // 2. DROPDOWN FIELDS
+                        if (col.options) {
+                          return (
+                            <td
+                              className="px-4 py-3 align-middle"
+                              key={col.key}
+                            >
+                              <select
+                                className="w-full min-w-[140px] cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                onChange={(e) => {
+                                  handleChange(index, col.key, e.target.value);
+                                }}
+                                value={row[col.key]}
+                              >
+                                <option disabled value="">
+                                  -- Select --
+                                </option>
+                                {col.options.map((opt: any) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          );
+                        }
+
+                        // 3. DATE AND NUMBER FIELDS
+                        return (
+                          <td className="px-4 py-3 align-middle" key={col.key}>
+                            <input
+                              className="w-full min-w-[140px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                              onChange={(e) => {
+                                handleChange(index, col.key, e.target.value);
+                              }}
+                              placeholder={`Enter ${col.label}...`}
+                              type={col.type || "text"}
+                              value={row[col.key]}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add Row Button */}
+            <div className="border-t border-gray-200 bg-gray-50 p-4">
+              <button
+                className="group flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none disabled:opacity-50"
+                disabled={isSubmitting}
+                onClick={handleAddRow}
+              >
+                <svg
+                  className="transition-transform group-hover:scale-110"
+                  fill="none"
+                  height="20"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="20"
+                >
+                  <line x1="12" x2="12" y1="5" y2="19"></line>
+                  <line x1="5" x2="19" y1="12" y2="12"></line>
+                </svg>
+                Add Another Row
+              </button>
+            </div>
+          </div>
+
+          {/* Final Action / Submit */}
+          <div className="mt-8 flex w-full max-w-[1400px] justify-end">
+            <button
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSubmitting}
+              onClick={handleSubmit}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 animate-spin text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <svg
+                    fill="none"
+                    height="20"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width="20"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Save {search.tableName}s
+                </span>
+              )}
             </button>
           </div>
-        </div>
-
-        {/* Final Action / Submit */}
-        <div className="mt-8 flex w-full max-w-[1400px] justify-end">
-          <button
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-            onClick={handleSubmit}
-          >
-            <svg
-              fill="none"
-              height="20"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              width="20"
-            >
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            Save {search.tableName}s
-          </button>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
