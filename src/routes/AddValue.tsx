@@ -4,7 +4,7 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ProtectedRoute } from "./components/-ProtectedRoute";
 import { Sidebar } from "./components/-SideBar";
@@ -21,37 +21,148 @@ export const Route = createFileRoute("/AddValue")({
 });
 
 // ============================================================================
-// HELPER FUNCTIONS
+// CUSTOM COMPONENT: Searchable Dropdown
 // ============================================================================
-const formatToUSDate = (dateStr: string) => {
-  if (!dateStr?.includes("-")) return dateStr;
-  const [year, month, day] = dateStr.split("-");
-  return `${parseInt(month)}/${parseInt(day)}/${year}`;
-};
+function SearchableSelect({
+  onChange,
+  options,
+  placeholder,
+  value,
+}: {
+  onChange: (val: string) => void;
+  options: { label: string; value: string }[];
+  placeholder: string;
+  value: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Find the selected option to display its label
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Filter options based on search term
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  return (
+    <div className="relative w-full min-w-[200px]" ref={wrapperRef}>
+      <div
+        className="flex w-full cursor-pointer items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+        onClick={() => {
+          setIsOpen(!isOpen);
+        }}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
+        <svg
+          className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19 9l-7 7-7-7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="sticky top-0 bg-white px-2 pt-1 pb-2">
+            <input
+              autoFocus
+              className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+              }}
+              placeholder="Search..."
+              type="text"
+              value={searchTerm}
+            />
+          </div>
+          {filteredOptions.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-gray-500">
+              No matches found.
+            </div>
+          ) : (
+            filteredOptions.map((opt) => (
+              <div
+                className={`cursor-pointer px-3 py-2 text-sm transition-colors hover:bg-blue-50 hover:text-blue-700 ${value === opt.value ? "bg-blue-50 font-bold text-blue-700" : "text-gray-700"}`}
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                  setSearchTerm(""); // Reset search on select
+                }}
+              >
+                {opt.label}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ============================================================================
-// CENTRALIZED SCHEMA CONFIGURATIONS (Matches EditValue.tsx)
+// CENTRALIZED SCHEMA CONFIGURATIONS
 // ============================================================================
+
+// Helper for the 64+ boolean permission dropdowns
+const permOptions = [
+  { label: "Granted", value: "true" },
+  { label: "Denied", value: "false" },
+];
+
 const tableConfigs: Record<string, any[]> = {
   Asset: [
-    { isReadOnly: true, key: "assetId", label: "Asset ID" },
-    { key: "assetTagDate", label: "Tag Date", type: "date" },
-    { key: "purchaseDate", label: "Purchase Date", type: "date" },
-    { key: "purchasePrice", label: "Purchase Price", type: "text" },
-    { key: "serialNumber", label: "Serial Number", type: "text" },
+    { isReadOnly: true, key: "AssetID", label: "Asset ID" },
+    { isReadOnly: true, key: "AssetTagDate", label: "Tag Date (Auto)" },
+    { key: "AssetPurchaseDate", label: "Purchase Date", type: "date" },
+    { key: "AssetPurchasePrice", label: "Purchase Price", type: "number" },
+    { key: "AssetSerialNumber", label: "Serial Number", type: "text" },
     {
-      key: "warrantyUnit",
+      key: "AssetWarrantyUnitOfMeasure",
       label: "Warranty Unit",
       options: [
         { label: "mm (Month)", value: "mm" },
         { label: "yy (Year)", value: "yy" },
       ],
     },
-    { key: "warrantyDuration", label: "Warranty Duration", type: "number" },
+    { key: "AssetWarrantyDuration", label: "Warranty Duration", type: "number" },
+    { key: "AssetUsefulLife", label: "Useful Life (Yrs)", type: "number" },
+    { key: "AssetSalvageValue", label: "Salvage Value", type: "number" },
+    { key: "EmployeeID", label: "Employee", relationLabel: "employeeFullName", relationTable: "Employee", relationValue: "employeeId", type: "relation" },
+    { key: "LocationID", label: "Location", relationLabel: "locationAddress", relationTable: "Location", relationValue: "locationId", type: "relation" },
+    { key: "ProductID", label: "Product", relationLabel: "productName", relationTable: "Product", relationValue: "productId", type: "relation" },
+    { key: "VendorID", label: "Vendor", relationLabel: "vendorName", relationTable: "Vendor", relationValue: "vendorId", type: "relation" },
   ],
   AssetFix: [
     { isReadOnly: true, key: "assetFixId", label: "Fix ID" },
-    { key: "assetIssueId", label: "Issue ID", type: "text" },
+    { key: "assetIssueId", label: "Issue", relationLabel: "assetIssueTitle", relationTable: "AssetIssue", relationValue: "assetIssueId", type: "relation" },
     { key: "assetFixDateStart", label: "Date Start", type: "date" },
     { key: "assetFixDateEnd", label: "Date End", type: "date" },
     { key: "assetFixCost", label: "Cost", type: "number" },
@@ -65,104 +176,176 @@ const tableConfigs: Record<string, any[]> = {
         { label: "Pending", value: "false" },
       ],
     },
-    { key: "employeeId", label: "Employee ID", type: "text" },
+    { key: "employeeId", label: "Fixed By", relationLabel: "employeeFullName", relationTable: "Employee", relationValue: "employeeId", type: "relation" },
   ],
   AssetIssue: [
     { isReadOnly: true, key: "assetIssueId", label: "Issue ID" },
     { key: "assetIssueTitle", label: "Title", type: "text" },
     { key: "assetIssueDescription", label: "Description", type: "text" },
     { key: "assetIssueDate", label: "Issue Date", type: "date" },
-    { key: "assetId", label: "Asset ID (Target)", type: "text" },
-    { key: "employeeId", label: "Reported By (Emp ID)", type: "text" },
+    { key: "assetId", label: "Asset", relationLabel: "assetSerialNumber", relationTable: "Asset", relationValue: "assetId", type: "relation" },
+    { key: "employeeId", label: "Reported By", relationLabel: "employeeFullName", relationTable: "Employee", relationValue: "employeeId", type: "relation" },
   ],
   AssetTransfer: [
     { isReadOnly: true, key: "assetTransferId", label: "Transfer ID" },
     { key: "assetTransferDate", label: "Transfer Date", type: "date" },
-    { key: "assetTransferPrice", label: "Transfer Price", type: "text" },
-    { key: "assetId", label: "Asset ID", type: "text" },
-    { key: "companyId", label: "Origin Company ID", type: "text" },
-    { key: "receivingCompanyId", label: "Receiving Company ID", type: "text" },
+    { key: "assetTransferPrice", label: "Transfer Price", type: "number" },
+    { key: "assetId", label: "Asset", relationLabel: "assetSerialNumber", relationTable: "Asset", relationValue: "assetId", type: "relation" },
+    { key: "companyId", label: "Origin Company", relationLabel: "companyName", relationTable: "Company", relationValue: "companyId", type: "relation" },
+    { key: "receivingCompanyId", label: "Receiving Company", relationLabel: "companyName", relationTable: "Company", relationValue: "companyId", type: "relation" },
   ],
   Building: [
     { isReadOnly: true, key: "buildingId", label: "Building ID" },
     { key: "buildingName", label: "Building Name", type: "text" },
-    { key: "companyId", label: "Company ID", type: "text" },
+    { key: "companyId", label: "Company", relationLabel: "companyName", relationTable: "Company", relationValue: "companyId", type: "relation" },
     { key: "buildingAddress", label: "Address", type: "text" },
-    { key: "buildingInsertDate", label: "Date Added", type: "date" },
   ],
   Category: [
     { isReadOnly: true, key: "categoryId", label: "Category ID" },
     { key: "categoryName", label: "Category Name", type: "text" },
-    { key: "categoryInsertDate", label: "Date Added", type: "date" },
   ],
   Company: [
     { isReadOnly: true, key: "companyId", label: "Company ID" },
     { key: "companyCode", label: "Company Code", type: "text" },
     { key: "companyName", label: "Company Name", type: "text" },
-    { key: "parentCompanyId", label: "Parent Company ID", type: "text" },
+    { key: "parentCompanyId", label: "Parent Company", relationLabel: "companyName", relationTable: "Company", relationValue: "companyId", type: "relation" },
     { key: "companyAddress", label: "Address", type: "text" },
   ],
   Department: [
     { isReadOnly: true, key: "departmentId", label: "Department ID" },
     { key: "departmentName", label: "Department Name", type: "text" },
-    { key: "departmentInsertDate", label: "Date Added", type: "date" },
   ],
   Employee: [
     { isReadOnly: true, key: "employeeId", label: "Employee ID" },
     { key: "employeeFullName", label: "Full Name", type: "text" },
-    { key: "roleId", label: "Role ID", type: "text" },
-    { key: "companyId", label: "Company ID", type: "text" },
-    { key: "departmentId", label: "Department ID", type: "text" },
-    { key: "employeeInsertDate", label: "Date Added", type: "date" },
+    { key: "roleId", label: "Role", relationLabel: "roleName", relationTable: "Role", relationValue: "roleId", type: "relation" },
+    { key: "companyId", label: "Company", relationLabel: "companyName", relationTable: "Company", relationValue: "companyId", type: "relation" },
+    { key: "departmentId", label: "Department", relationLabel: "departmentName", relationTable: "Department", relationValue: "departmentId", type: "relation" },
   ],
   EndUser: [
     { isReadOnly: true, key: "endUserId", label: "User ID" },
     { key: "endUserName", label: "Username", type: "text" },
-    { key: "endUserRoleId", label: "Role ID", type: "text" },
-    { key: "employeeId", label: "Employee ID", type: "text" },
-    { key: "endUserRegisterDate", label: "Registration Date", type: "date" },
+    { key: "endUserRoleId", label: "Role", relationLabel: "roleName", relationTable: "Role", relationValue: "roleId", type: "relation" },
+    { key: "employeeId", label: "Employee", relationLabel: "employeeFullName", relationTable: "Employee", relationValue: "employeeId", type: "relation" },
   ],
+  
+  // ==========================================
+  // NEW: EndUserRole 
+  // ==========================================
+  EndUserRole: [
+    { isReadOnly: true, key: "EndUserRoleID", label: "Role ID" },
+    { key: "EndUserRoleName", label: "Role Name", type: "text" },
+    
+    // --- CREATE PERMISSIONS ---
+    { key: "CreateAsset", label: "Create Asset", options: permOptions },
+    { key: "CreateAssetFix", label: "Create Asset Fix", options: permOptions },
+    { key: "CreateAssetIssue", label: "Create Asset Issue", options: permOptions },
+    { key: "CreateBuilding", label: "Create Building", options: permOptions },
+    { key: "CreateCategory", label: "Create Category", options: permOptions },
+    { key: "CreateCompany", label: "Create Company", options: permOptions },
+    { key: "CreateDepartment", label: "Create Department", options: permOptions },
+    { key: "CreateEmployee", label: "Create Employee", options: permOptions },
+    { key: "CreateEndUser", label: "Create End User", options: permOptions },
+    { key: "CreateEndUserRole", label: "Create Role", options: permOptions },
+    { key: "CreateLocation", label: "Create Location", options: permOptions },
+    { key: "CreateManufacturer", label: "Create Manufacturer", options: permOptions },
+    { key: "CreateProduct", label: "Create Product", options: permOptions },
+    { key: "CreateProductSet", label: "Create Product Set", options: permOptions },
+    { key: "CreateRole", label: "Create Legacy Role", options: permOptions },
+    { key: "CreateVendor", label: "Create Vendor", options: permOptions },
+
+    // --- READ PERMISSIONS ---
+    { key: "ReadAsset", label: "Read Asset", options: permOptions },
+    { key: "ReadAssetFix", label: "Read Asset Fix", options: permOptions },
+    { key: "ReadAssetIssue", label: "Read Asset Issue", options: permOptions },
+    { key: "ReadBuilding", label: "Read Building", options: permOptions },
+    { key: "ReadCategory", label: "Read Category", options: permOptions },
+    { key: "ReadCompany", label: "Read Company", options: permOptions },
+    { key: "ReadDepartment", label: "Read Department", options: permOptions },
+    { key: "ReadEmployee", label: "Read Employee", options: permOptions },
+    { key: "ReadEndUser", label: "Read End User", options: permOptions },
+    { key: "ReadEndUserRole", label: "Read Role", options: permOptions },
+    { key: "ReadLocation", label: "Read Location", options: permOptions },
+    { key: "ReadLog", label: "Read System Logs", options: permOptions },
+    { key: "ReadManufacturer", label: "Read Manufacturer", options: permOptions },
+    { key: "ReadProduct", label: "Read Product", options: permOptions },
+    { key: "ReadProductSet", label: "Read Product Set", options: permOptions },
+    { key: "ReadRole", label: "Read Legacy Role", options: permOptions },
+    { key: "ReadVendor", label: "Read Vendor", options: permOptions },
+
+    // --- UPDATE PERMISSIONS ---
+    { key: "UpdateAsset", label: "Update Asset", options: permOptions },
+    { key: "UpdateAssetFix", label: "Update Asset Fix", options: permOptions },
+    { key: "UpdateAssetIssue", label: "Update Asset Issue", options: permOptions },
+    { key: "UpdateBuilding", label: "Update Building", options: permOptions },
+    { key: "UpdateCategory", label: "Update Category", options: permOptions },
+    { key: "UpdateCompany", label: "Update Company", options: permOptions },
+    { key: "UpdateDepartment", label: "Update Department", options: permOptions },
+    { key: "UpdateEmployee", label: "Update Employee", options: permOptions },
+    { key: "UpdateEndUser", label: "Update End User", options: permOptions },
+    { key: "UpdateEndUserRole", label: "Update Role", options: permOptions },
+    { key: "UpdateLocation", label: "Update Location", options: permOptions },
+    { key: "UpdateManufacturer", label: "Update Manufacturer", options: permOptions },
+    { key: "UpdateProduct", label: "Update Product", options: permOptions },
+    { key: "UpdateProductSet", label: "Update Product Set", options: permOptions },
+    { key: "UpdateRole", label: "Update Legacy Role", options: permOptions },
+    { key: "UpdateVendor", label: "Update Vendor", options: permOptions },
+
+    // --- DELETE PERMISSIONS ---
+    { key: "DeleteAsset", label: "Delete Asset", options: permOptions },
+    { key: "DeleteAssetFix", label: "Delete Asset Fix", options: permOptions },
+    { key: "DeleteAssetIssue", label: "Delete Asset Issue", options: permOptions },
+    { key: "DeleteBuilding", label: "Delete Building", options: permOptions },
+    { key: "DeleteCategory", label: "Delete Category", options: permOptions },
+    { key: "DeleteCompany", label: "Delete Company", options: permOptions },
+    { key: "DeleteDepartment", label: "Delete Department", options: permOptions },
+    { key: "DeleteEmployee", label: "Delete Employee", options: permOptions },
+    { key: "DeleteEndUser", label: "Delete End User", options: permOptions },
+    { key: "DeleteEndUserRole", label: "Delete Role", options: permOptions },
+    { key: "DeleteLocation", label: "Delete Location", options: permOptions },
+    { key: "DeleteLog", label: "Delete System Logs", options: permOptions },
+    { key: "DeleteManufacturer", label: "Delete Manufacturer", options: permOptions },
+    { key: "DeleteProduct", label: "Delete Product", options: permOptions },
+    { key: "DeleteProductSet", label: "Delete Product Set", options: permOptions },
+    { key: "DeleteRole", label: "Delete Legacy Role", options: permOptions },
+    { key: "DeleteVendor", label: "Delete Vendor", options: permOptions },
+  ],
+
   Location: [
     { isReadOnly: true, key: "locationId", label: "Location ID" },
     { key: "locationAddress", label: "Address / Room", type: "text" },
-    { key: "buildingId", label: "Building ID", type: "text" },
-    { key: "locationInsertDate", label: "Date Added", type: "date" },
+    { key: "buildingId", label: "Building", relationLabel: "buildingName", relationTable: "Building", relationValue: "buildingId", type: "relation" },
   ],
   Manufacturer: [
     { isReadOnly: true, key: "manufacturerId", label: "Manufacturer ID" },
     { key: "manufacturerName", label: "Manufacturer Name", type: "text" },
-    { key: "manufacturerInsertDate", label: "Date Added", type: "date" },
   ],
   Product: [
     { isReadOnly: true, key: "productId", label: "Product ID" },
     { key: "productName", label: "Product Name", type: "text" },
     { key: "productModelNumber", label: "Model Number", type: "text" },
-    { key: "manufacturerId", label: "Manufacturer ID", type: "text" },
-    { key: "categoryId", label: "Category ID", type: "text" },
-    { key: "productInsertDate", label: "Date Added", type: "date" },
+    { key: "manufacturerId", label: "Manufacturer", relationLabel: "manufacturerName", relationTable: "Manufacturer", relationValue: "manufacturerId", type: "relation" },
+    { key: "categoryId", label: "Category", relationLabel: "categoryName", relationTable: "Category", relationValue: "categoryId", type: "relation" },
   ],
   ProductSet: [
-    { isReadOnly: true, key: "parentProductId", label: "Parent Product ID" },
-    { isReadOnly: true, key: "productId", label: "Child Product ID" },
-    { key: "productSetInsertDate", label: "Date Added", type: "date" },
+    { key: "parentProductId", label: "Parent Product", relationLabel: "productName", relationTable: "Product", relationValue: "productId", type: "relation" },
+    { key: "productId", label: "Child Product", relationLabel: "productName", relationTable: "Product", relationValue: "productId", type: "relation" },
   ],
   Role: [
     { isReadOnly: true, key: "roleId", label: "Role ID" },
     { key: "roleName", label: "Role Name", type: "text" },
-    { key: "roleInsertDate", label: "Date Added", type: "date" },
   ],
   Vendor: [
     { isReadOnly: true, key: "vendorId", label: "Vendor ID" },
     { key: "vendorName", label: "Vendor Name", type: "text" },
     { key: "vendorAddress", label: "Address", type: "text" },
-    { key: "vendorInsertDate", label: "Date Added", type: "date" },
   ],
 };
 
 function AddValuePage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/AddValue" });
-  const { addRecord } = useDatabase();
+  const { addRecord, getTableData } = useDatabase();
 
   const currentTableConfig =
     tableConfigs[search.tableName] || tableConfigs.Asset;
@@ -186,6 +369,15 @@ function AddValuePage() {
 
   const handleAddRow = () => {
     setRows([...rows, getBlankRow()]);
+  };
+
+  // ==========================================
+  // Handle Removing a Row
+  // ==========================================
+  const handleRemoveRow = (indexToRemove: number) => {
+    if (rows.length > 1) {
+      setRows(rows.filter((_, index) => index !== indexToRemove));
+    }
   };
 
   const handleSubmit = async () => {
@@ -223,14 +415,17 @@ function AddValuePage() {
           const formattedRow: Record<string, any> = { ...row };
 
           currentTableConfig.forEach((col) => {
-            // 1. DELETE AUTO-GENERATED IDs: The SQL backend uses NEWID()
-            // so we don't want to send fake IDs anymore!
+            // 1. DELETE AUTO-GENERATED/OMITTED IDs
             if (col.isReadOnly) {
               delete formattedRow[col.key];
             }
-            // 2. Format Dates
+            // 2. Format Dates for Zod/SQL (ISO 8601)
             else if (col.type === "date") {
-              formattedRow[col.key] = formatToUSDate(String(row[col.key]));
+              if (row[col.key]) {
+                formattedRow[col.key] = new Date(row[col.key]).toISOString();
+              } else {
+                formattedRow[col.key] = null;
+              }
             }
             // 3. Format Numbers
             else if (col.type === "number") {
@@ -250,14 +445,13 @@ function AddValuePage() {
       alert(`Successfully added ${rows.length} new ${search.tableName}(s)!`);
       navigate({ to: `/table/${search.tableName}` });
     } catch (error) {
-      alert("An error occurred while saving. Please try again.");
+      alert("An error occurred while saving. Please check the console.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    // 2. WRAPPER ADDED HERE
     <ProtectedRoute>
       <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
         <Sidebar />
@@ -289,6 +483,7 @@ function AddValuePage() {
               onClick={() => {
                 window.history.back();
               }}
+              type="button"
             >
               <svg
                 className="md:h-8 md:w-8"
@@ -317,8 +512,8 @@ function AddValuePage() {
           </div>
 
           {/* Dynamic Input Table Card */}
-          <div className="w-full max-w-[1400px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="overflow-x-auto">
+          <div className="w-full max-w-[1400px] overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto overflow-y-visible pb-32">
               <table className="w-full min-w-[1000px] table-auto text-left text-sm">
                 {/* Table Header */}
                 <thead className="border-b border-gray-200 bg-gray-50">
@@ -331,6 +526,9 @@ function AddValuePage() {
                         {col.label}
                       </th>
                     ))}
+                    <th className="w-16 px-4 py-4 text-center align-middle text-xs font-bold tracking-wider text-gray-500 uppercase">
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
@@ -356,7 +554,33 @@ function AddValuePage() {
                           );
                         }
 
-                        // 2. DROPDOWN FIELDS
+                        // 2. SEARCHABLE RELATION DROPDOWNS
+                        if (col.type === "relation") {
+                          const relationData = getTableData(col.relationTable);
+
+                          const mappedOptions = relationData.map((item) => ({
+                            label: item[col.relationLabel] || "Unnamed Record",
+                            value: item[col.relationValue],
+                          }));
+
+                          return (
+                            <td
+                              className="px-4 py-3 align-middle"
+                              key={col.key}
+                            >
+                              <SearchableSelect
+                                onChange={(val) => {
+                                  handleChange(index, col.key, val);
+                                }}
+                                options={mappedOptions}
+                                placeholder={`Select ${col.label}...`}
+                                value={row[col.key]}
+                              />
+                            </td>
+                          );
+                        }
+
+                        // 3. STANDARD DROPDOWN FIELDS
                         if (col.options) {
                           return (
                             <td
@@ -383,7 +607,7 @@ function AddValuePage() {
                           );
                         }
 
-                        // 3. DATE AND NUMBER FIELDS
+                        // 4. DATE AND NUMBER FIELDS
                         return (
                           <td className="px-4 py-3 align-middle" key={col.key}>
                             <input
@@ -398,6 +622,35 @@ function AddValuePage() {
                           </td>
                         );
                       })}
+
+                      {/* Trash Can Delete Button */}
+                      <td className="w-16 px-4 py-3 text-center align-middle">
+                        {rows.length > 1 && (
+                          <button
+                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none disabled:opacity-50"
+                            disabled={isSubmitting}
+                            onClick={() => {
+                              handleRemoveRow(index);
+                            }}
+                            title="Remove Row"
+                            type="button"
+                          >
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -410,6 +663,7 @@ function AddValuePage() {
                 className="group flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none disabled:opacity-50"
                 disabled={isSubmitting}
                 onClick={handleAddRow}
+                type="button"
               >
                 <svg
                   className="transition-transform group-hover:scale-110"
@@ -436,6 +690,7 @@ function AddValuePage() {
               className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isSubmitting}
               onClick={handleSubmit}
+              type="button"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
