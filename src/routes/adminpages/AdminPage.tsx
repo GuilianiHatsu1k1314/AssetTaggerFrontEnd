@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { ProtectedRoute } from ".././components/-ProtectedRoute"; // 1. IMPORT ADDED HERE (Adjust path as needed)
+import { ProtectedRoute } from "../components/-ProtectedRoute";
 import { Sidebar } from "../components/-SideBar";
 
 export const Route = createFileRoute("/adminpages/AdminPage")({
@@ -9,8 +9,8 @@ export const Route = createFileRoute("/adminpages/AdminPage")({
 
 function AdminDashboard() {
   return (
-    // 2. WRAPPER ADDED HERE
-    <ProtectedRoute>
+    // WRAPPER ADDED HERE: Ensures only Admins can access this dashboard
+    <ProtectedRoute requireAdmin={false}>
       {/* Responsive main wrapper: flex-col on mobile, flex-row on desktop */}
       <div className="flex h-screen w-full flex-col bg-gray-50 md:flex-row">
         {/* Include the Sidebar */}
@@ -23,13 +23,13 @@ function AdminDashboard() {
               Admin Dashboard
             </h1>
             <p className="mt-3 text-lg text-gray-600">
-              Select an action below to manage system users and application
-              data.
+              Select an action below to manage system security, users, and
+              application data.
             </p>
           </div>
 
           {/* Action Buttons / Cards Grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8 xl:grid-cols-4">
             {/* 1. Register Users */}
             <Link
               className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
@@ -86,7 +86,32 @@ function AdminDashboard() {
               </p>
             </Link>
 
-            {/* 3. Manage Tables */}
+            {/* 3. Manage Roles (NEW TAB) */}
+            <Link
+              className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
+              to="/table/EndUserRole"
+            >
+              <div className="mb-6 rounded-full bg-[#e0e7ff] p-5 text-[#1d4ed8] transition-colors group-hover:bg-[#1d4ed8] group-hover:text-white">
+                <svg
+                  fill="none"
+                  height="48"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  width="48"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-black">Manage Roles</h2>
+              <p className="mt-2 text-gray-500">
+                Configure security profiles and granular module permissions.
+              </p>
+            </Link>
+
+            {/* 4. Manage Tables */}
             <Link
               className="group flex flex-col items-center justify-center rounded-2xl border-2 border-transparent bg-white p-10 text-center shadow-lg transition-all hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl"
               to="/adminpages/ManageTable"
