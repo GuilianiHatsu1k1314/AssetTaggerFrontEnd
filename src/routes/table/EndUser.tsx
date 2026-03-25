@@ -161,28 +161,6 @@ function EndUserPage() {
                   type="text"
                 />
               </div>
-
-              {/* Add Button */}
-              <Link
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-                to={`/AddValue?tableName=EndUser`} // <-- Properly passing the table name
-              >
-                <svg
-                  fill="none"
-                  height="16"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="16"
-                >
-                  <line x1="12" x2="12" y1="5" y2="19"></line>
-                  <line x1="5" x2="19" y1="12" y2="12"></line>
-                </svg>
-                Add End User
-              </Link>
-
               {/* Edit Mode Toggle */}
               <button
                 className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm transition-colors focus:outline-none ${
