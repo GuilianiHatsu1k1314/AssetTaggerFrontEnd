@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import svgr from "vite-plugin-svgr";
@@ -7,6 +8,12 @@ import svgr from "vite-plugin-svgr";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    basicSsl({
+      /** name of certification */
+      name: "test",
+      /** optional, days before certificate expires */
+      ttlDays: 365,
+    }),
     tanstackRouter({
       autoCodeSplitting: true,
       target: "react",
