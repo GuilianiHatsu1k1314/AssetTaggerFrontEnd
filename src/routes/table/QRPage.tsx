@@ -159,11 +159,23 @@ function QRViewPage() {
                   />
                   <InfoRow
                     label="Asset Tag Date"
-                    value={selectedAsset?.assetTagDate || ""}
+                    value={
+                      selectedAsset?.assetTagDate
+                        ? new Date(
+                            selectedAsset.assetTagDate,
+                          ).toLocaleDateString()
+                        : ""
+                    }
                   />
                   <InfoRow
                     label="Purchase Date"
-                    value={selectedAsset?.assetPurchaseDate || ""}
+                    value={
+                      selectedAsset?.assetPurchaseDate
+                        ? new Date(
+                            selectedAsset.assetPurchaseDate,
+                          ).toLocaleDateString()
+                        : ""
+                    }
                   />
                   <InfoRow label="Purchase Price" value={formattedPrice} />
                   <InfoRow
@@ -172,7 +184,13 @@ function QRViewPage() {
                   />
                   <InfoRow
                     label="Warranty Expiration Date"
-                    value={selectedAsset?.assetWarrantyExpirationDate || ""}
+                    value={
+                      selectedAsset?.assetWarrantyExpirationDate
+                        ? new Date(
+                            selectedAsset.assetWarrantyExpirationDate,
+                          ).toLocaleDateString()
+                        : ""
+                    }
                   />
                 </div>
 
