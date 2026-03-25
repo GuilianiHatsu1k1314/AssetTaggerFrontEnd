@@ -99,7 +99,7 @@ function CreateRolePage() {
       await addRecord("EndUserRole", payload);
 
       alert(`Successfully created security role: ${roleName}`);
-      navigate({ to: "/adminpages/CreateRole" });
+      navigate({ to: "/table/EndUserRole" });
     } catch (error) {
       alert(
         "An error occurred while creating the role. Please check the console.",
