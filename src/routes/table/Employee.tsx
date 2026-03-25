@@ -62,7 +62,31 @@ function EmployeePage() {
   // 3. Get live data specifically for the Employee table!
   const { getTableData } = useDatabase();
   const employees = getTableData("Employee"); // FIX: Fetches "Employee" data now
+  const companies = getTableData("Company"); // FIX: Fetches "Company" data now
+  const departments = getTableData("Department"); // FIX: Fetches "Department" data now
+  const roles = getTableData("Role"); // FIX: Fetches "Role" data now
 
+  console.log("Employee Data:", employees); // Debug: Check if employee data is loading
+  console.log("Company Data:", companies); // Debug: Check if company data is loading
+  console.log("Department Data:", departments); // Debug: Check if department data is loading
+  console.log("Role Data:", roles); // Debug: Check if role data is loading
+
+  const readableEmployees = employees.map((employee) => {
+    return {
+      companyId:
+        companies.find((c) => c.companyId === employee.companyId)
+          ?.companyName || "Unknown Company",
+      departmentId:
+        departments.find((d) => d.departmentId === employee.departmentId)
+          ?.departmentName || "Unknown Department",
+      employeeFullName: employee.employeeFullName,
+      employeeId: employee.employeeId,
+      employeeInsertDate: employee.employeeInsertDate,
+      roleId:
+        roles.find((r) => r.roleId === employee.roleId)?.roleName ||
+        "Unknown Role",
+    };
+  });
   // ==========================================
   // STICKY EDIT MODE LOGIC
   // ==========================================
@@ -82,7 +106,8 @@ function EmployeePage() {
 
   const table = useReactTable({
     columns,
-    data: employees, // <-- Using the live context data here
+    // data: employees, // <-- Using the live context data here
+    data: readableEmployees, // <-- Using the transformed, human-readable employee data here
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
