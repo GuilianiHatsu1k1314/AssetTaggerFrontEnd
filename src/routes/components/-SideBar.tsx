@@ -7,26 +7,20 @@ import JDNLogo from "/jdnlogowhite.png";
 
 export function Sidebar() {
   const navigate = useNavigate();
-  const { logoutUser } = useDatabase();
+  // 1. Pull in currentUser from the context!
+  const { currentUser, logoutUser } = useDatabase();
 
-  // Check if the user logged in as an admin
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  // 2. Check if the user's role is Admin based on the live context data
+  const isAdmin = currentUser?.roleName === "Admin";
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    // 1. You may need to retrieve the user's ID here if your backend requires it
-    // Example: const currentUserId = localStorage.getItem("currentUserId") || "";
-    const currentUserId = "";
+    // Call the API to destroy the httpOnly cookie and clear the Context state.
+    // (Your AssetContext already handles grabbing the ID and clearing localStorage!)
+    await logoutUser();
 
-    // 2. Call the API to destroy the httpOnly cookie and clear the Context state
-    await logoutUser(currentUserId);
-
-    // 3. Clear local storage flags
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("currentUser");
-
-    // 4. Safely redirect back to the Login page AFTER the API is done
+    // Safely redirect back to the Login page AFTER the API is done
     navigate({ to: "/" });
   };
 
@@ -70,7 +64,6 @@ export function Sidebar() {
         </nav>
 
         <div className="mt-auto">
-          {/* FIX: Removed the <Link> wrapper and applied the handler directly to the button */}
           <button
             className="group flex items-center text-black transition-colors hover:text-white"
             onClick={handleLogout}
@@ -98,7 +91,7 @@ export function Sidebar() {
       <div className="fixed right-0 bottom-0 left-0 z-50 flex h-20 items-center justify-between border-t border-gray-300 bg-white px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:hidden">
         <Link
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
-          to="/LandingPage" // Adjusted this to point to the dashboard instead of the login page
+          to="/LandingPage"
         >
           <svg
             fill="none"
@@ -177,7 +170,6 @@ export function Sidebar() {
           </Link>
         )}
 
-        {/* FIX: Removed the <Link> wrapper here as well */}
         <button
           className="flex flex-col items-center gap-1 text-black hover:text-blue-600"
           onClick={handleLogout}
