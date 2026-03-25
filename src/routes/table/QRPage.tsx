@@ -48,17 +48,21 @@ function QRViewPage() {
     console.log("Found Asset:", selectedAsset);
   }, [search.assetId, assets, selectedAsset]);
 
+  // ==========================================
+  // UPDATED: Now only passes the Asset ID into the QR Code!
+  // ==========================================
   const qrCodeValue = selectedAsset
-    ? JSON.stringify(selectedAsset)
+    ? String(selectedAsset.assetId)
     : "Asset Not Found";
 
   // Formatter to ensure the price always shows the Philippine Peso sign
-  const rawPrice = selectedAsset?.purchasePrice || "";
-  const formattedPrice = rawPrice
-    ? String(rawPrice).includes("₱")
-      ? rawPrice
-      : `₱${rawPrice}`
-    : "";
+  const rawPrice = selectedAsset?.assetPurchasePrice || "";
+  const formattedPrice =
+    typeof rawPrice === "number"
+      ? String(rawPrice).includes("₱")
+        ? rawPrice
+        : `₱${rawPrice}`
+      : "";
 
   const fullCardRef = useRef<HTMLDivElement>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
@@ -159,20 +163,16 @@ function QRViewPage() {
                   />
                   <InfoRow
                     label="Purchase Date"
-                    value={selectedAsset?.purchaseDate || ""}
+                    value={selectedAsset?.assetPurchaseDate || ""}
                   />
                   <InfoRow label="Purchase Price" value={formattedPrice} />
                   <InfoRow
                     label="Serial Number"
-                    value={selectedAsset?.serialNumber || ""}
+                    value={selectedAsset?.assetSerialNumber || ""}
                   />
                   <InfoRow
-                    label="Warranty Unit"
-                    value={selectedAsset?.warrantyUnit || ""}
-                  />
-                  <InfoRow
-                    label="Warranty Duration"
-                    value={selectedAsset?.warrantyDuration || ""}
+                    label="Warranty Expiration Date"
+                    value={selectedAsset?.assetWarrantyExpirationDate || ""}
                   />
                 </div>
 
