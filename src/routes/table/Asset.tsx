@@ -37,18 +37,19 @@ const columns = [
     header: "Asset ID",
   }),
   columnHelper.accessor("assetTagDate", {
+    cell: (info) => new Date(info.getValue()).toLocaleDateString() || "-",
     header: "Tag Date",
     sortingFn: "datetime",
   }),
-  columnHelper.accessor("purchaseDate", {
-    cell: (info) => info.getValue() || "-",
+  columnHelper.accessor("assetPurchaseDate", {
+    cell: (info) => new Date(info.getValue()).toLocaleDateString() || "-",
     header: "Purchase Date",
     sortingFn: "datetime",
   }),
-  columnHelper.accessor("purchasePrice", {
+  columnHelper.accessor("assetPurchasePrice", {
     cell: (info) => {
       const val = info.getValue();
-      return val ? `₱${val}` : "-"; // Philippine Peso
+      return typeof val === "number" ? `₱${val}` : "-";
     },
     header: "Purchase Price",
     sortingFn: (rowA, rowB, columnId) => {
@@ -59,11 +60,11 @@ const columns = [
       return a < b ? -1 : a > b ? 1 : 0;
     },
   }),
-  columnHelper.accessor("serialNumber", {
+  columnHelper.accessor("assetSerialNumber", {
     cell: (info) => info.getValue() || "-",
     header: "Serial Number",
   }),
-  columnHelper.accessor("warrantyUnit", {
+  columnHelper.accessor("assetWarrantyUnitOfMeasure", {
     cell: (info) => {
       const val = info.getValue();
       if (val === "yy") return "Years";
@@ -74,20 +75,55 @@ const columns = [
     },
     header: "Warranty Unit",
   }),
-  columnHelper.accessor("warrantyDuration", {
+  columnHelper.accessor("assetWarrantyDuration", {
     cell: (info) => info.getValue() || "-",
     header: "Warranty Duration",
   }),
-  columnHelper.accessor("usefulLife", {
+  columnHelper.accessor("assetUsefulLife", {
     cell: (info) => info.getValue() || "-",
     header: "Useful Life (Yrs)",
   }),
-  columnHelper.accessor("salvageValue", {
+  columnHelper.accessor("assetSalvageValue", {
     cell: (info) => {
       const val = info.getValue();
-      return val ? `₱${val}` : "-";
+      return typeof val === "number" ? `₱${val}` : "-";
     },
     header: "Salvage Value",
+  }),
+  // ==========================================
+  // NEW RELATIONAL ID COLUMNS ADDED BELOW
+  // ==========================================
+  columnHelper.accessor("employeeId", {
+    cell: (info) => (
+      <span className="font-mono text-sm text-gray-500">
+        {info.getValue() || "-"}
+      </span>
+    ),
+    header: "Employee ID",
+  }),
+  columnHelper.accessor("locationId", {
+    cell: (info) => (
+      <span className="font-mono text-sm text-gray-500">
+        {info.getValue() || "-"}
+      </span>
+    ),
+    header: "Location ID",
+  }),
+  columnHelper.accessor("productId", {
+    cell: (info) => (
+      <span className="font-mono text-sm text-gray-500">
+        {info.getValue() || "-"}
+      </span>
+    ),
+    header: "Product ID",
+  }),
+  columnHelper.accessor("vendorId", {
+    cell: (info) => (
+      <span className="font-mono text-sm text-gray-500">
+        {info.getValue() || "-"}
+      </span>
+    ),
+    header: "Vendor ID",
   }),
 ];
 
@@ -102,7 +138,7 @@ function AssetPage() {
   // STICKY EDIT MODE LOGIC
   // ==========================================
   const [isEditMode, setIsEditMode] = useState(() => {
-    return sessionStorage.getItem("Asset_isEditMode") === "true";
+    return sessionStorage.getItem("Asset_isEditMode") === "false";
   });
 
   const toggleEditMode = () => {
