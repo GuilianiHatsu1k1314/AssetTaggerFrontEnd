@@ -38,8 +38,10 @@ import { Route as TableAssetIssueRouteImport } from './routes/table/AssetIssue'
 import { Route as TableAssetFixRouteImport } from './routes/table/AssetFix'
 import { Route as TableAssetRouteImport } from './routes/table/Asset'
 import { Route as AdminpagesRegisterUserRouteImport } from './routes/adminpages/RegisterUser'
+import { Route as AdminpagesManageUserRolesRouteImport } from './routes/adminpages/ManageUserRoles'
 import { Route as AdminpagesManageUserRouteImport } from './routes/adminpages/ManageUser'
 import { Route as AdminpagesManageTableRouteImport } from './routes/adminpages/ManageTable'
+import { Route as AdminpagesCreateRoleRouteImport } from './routes/adminpages/CreateRole'
 import { Route as AdminpagesAdminPageRouteImport } from './routes/adminpages/AdminPage'
 
 const AboutRoute = AboutRouteImport.update({
@@ -187,6 +189,12 @@ const AdminpagesRegisterUserRoute = AdminpagesRegisterUserRouteImport.update({
   path: '/adminpages/RegisterUser',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminpagesManageUserRolesRoute =
+  AdminpagesManageUserRolesRouteImport.update({
+    id: '/adminpages/ManageUserRoles',
+    path: '/adminpages/ManageUserRoles',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminpagesManageUserRoute = AdminpagesManageUserRouteImport.update({
   id: '/adminpages/ManageUser',
   path: '/adminpages/ManageUser',
@@ -195,6 +203,11 @@ const AdminpagesManageUserRoute = AdminpagesManageUserRouteImport.update({
 const AdminpagesManageTableRoute = AdminpagesManageTableRouteImport.update({
   id: '/adminpages/ManageTable',
   path: '/adminpages/ManageTable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminpagesCreateRoleRoute = AdminpagesCreateRoleRouteImport.update({
+  id: '/adminpages/CreateRole',
+  path: '/adminpages/CreateRole',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminpagesAdminPageRoute = AdminpagesAdminPageRouteImport.update({
@@ -214,8 +227,10 @@ export interface FileRoutesByFullPath {
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
   '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/CreateRole': typeof AdminpagesCreateRoleRoute
   '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/ManageUserRoles': typeof AdminpagesManageUserRolesRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/AssetFix': typeof TableAssetFixRoute
@@ -247,8 +262,10 @@ export interface FileRoutesByTo {
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
   '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/CreateRole': typeof AdminpagesCreateRoleRoute
   '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/ManageUserRoles': typeof AdminpagesManageUserRolesRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/AssetFix': typeof TableAssetFixRoute
@@ -282,8 +299,10 @@ export interface FileRoutesById {
   '/TableSelection': typeof TableSelectionRoute
   '/about': typeof AboutRoute
   '/adminpages/AdminPage': typeof AdminpagesAdminPageRoute
+  '/adminpages/CreateRole': typeof AdminpagesCreateRoleRoute
   '/adminpages/ManageTable': typeof AdminpagesManageTableRoute
   '/adminpages/ManageUser': typeof AdminpagesManageUserRoute
+  '/adminpages/ManageUserRoles': typeof AdminpagesManageUserRolesRoute
   '/adminpages/RegisterUser': typeof AdminpagesRegisterUserRoute
   '/table/Asset': typeof TableAssetRoute
   '/table/AssetFix': typeof TableAssetFixRoute
@@ -318,8 +337,10 @@ export interface FileRouteTypes {
     | '/TableSelection'
     | '/about'
     | '/adminpages/AdminPage'
+    | '/adminpages/CreateRole'
     | '/adminpages/ManageTable'
     | '/adminpages/ManageUser'
+    | '/adminpages/ManageUserRoles'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/AssetFix'
@@ -351,8 +372,10 @@ export interface FileRouteTypes {
     | '/TableSelection'
     | '/about'
     | '/adminpages/AdminPage'
+    | '/adminpages/CreateRole'
     | '/adminpages/ManageTable'
     | '/adminpages/ManageUser'
+    | '/adminpages/ManageUserRoles'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/AssetFix'
@@ -385,8 +408,10 @@ export interface FileRouteTypes {
     | '/TableSelection'
     | '/about'
     | '/adminpages/AdminPage'
+    | '/adminpages/CreateRole'
     | '/adminpages/ManageTable'
     | '/adminpages/ManageUser'
+    | '/adminpages/ManageUserRoles'
     | '/adminpages/RegisterUser'
     | '/table/Asset'
     | '/table/AssetFix'
@@ -420,8 +445,10 @@ export interface RootRouteChildren {
   TableSelectionRoute: typeof TableSelectionRoute
   AboutRoute: typeof AboutRoute
   AdminpagesAdminPageRoute: typeof AdminpagesAdminPageRoute
+  AdminpagesCreateRoleRoute: typeof AdminpagesCreateRoleRoute
   AdminpagesManageTableRoute: typeof AdminpagesManageTableRoute
   AdminpagesManageUserRoute: typeof AdminpagesManageUserRoute
+  AdminpagesManageUserRolesRoute: typeof AdminpagesManageUserRolesRoute
   AdminpagesRegisterUserRoute: typeof AdminpagesRegisterUserRoute
 }
 
@@ -630,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminpagesRegisterUserRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/adminpages/ManageUserRoles': {
+      id: '/adminpages/ManageUserRoles'
+      path: '/adminpages/ManageUserRoles'
+      fullPath: '/adminpages/ManageUserRoles'
+      preLoaderRoute: typeof AdminpagesManageUserRolesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/adminpages/ManageUser': {
       id: '/adminpages/ManageUser'
       path: '/adminpages/ManageUser'
@@ -642,6 +676,13 @@ declare module '@tanstack/react-router' {
       path: '/adminpages/ManageTable'
       fullPath: '/adminpages/ManageTable'
       preLoaderRoute: typeof AdminpagesManageTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adminpages/CreateRole': {
+      id: '/adminpages/CreateRole'
+      path: '/adminpages/CreateRole'
+      fullPath: '/adminpages/CreateRole'
+      preLoaderRoute: typeof AdminpagesCreateRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/adminpages/AdminPage': {
@@ -713,8 +754,10 @@ const rootRouteChildren: RootRouteChildren = {
   TableSelectionRoute: TableSelectionRoute,
   AboutRoute: AboutRoute,
   AdminpagesAdminPageRoute: AdminpagesAdminPageRoute,
+  AdminpagesCreateRoleRoute: AdminpagesCreateRoleRoute,
   AdminpagesManageTableRoute: AdminpagesManageTableRoute,
   AdminpagesManageUserRoute: AdminpagesManageUserRoute,
+  AdminpagesManageUserRolesRoute: AdminpagesManageUserRolesRoute,
   AdminpagesRegisterUserRoute: AdminpagesRegisterUserRoute,
 }
 export const routeTree = rootRouteImport
